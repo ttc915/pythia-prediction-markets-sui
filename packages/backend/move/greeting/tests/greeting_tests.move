@@ -5,9 +5,9 @@
 module greeting::greeting_tests;
 
 use greeting::greeting;
+use std::unit_test;
 use sui::random::{Self, Random};
 use sui::test_scenario as ts;
-use sui::test_utils;
 
 #[test]
 /// Tests successful run of the set_greeting() and reset_greeting() functions.
@@ -54,7 +54,7 @@ fun test_greeting() {
     assert!(greeting::name(&g) == empty, 4);
     assert!(greeting::emoji(&g) == greeting::no_emoji_index(), 5);
 
-    test_utils::destroy(g);
+    unit_test::destroy(g);
     ts::return_shared(random_state);
     ts.end();
 }
@@ -93,7 +93,7 @@ fun test_set_greeting_fail() {
     // Should fail.
     greeting::set_greeting(&mut g, empty, &random_state, ts.ctx());
 
-    test_utils::destroy(g);
+    unit_test::destroy(g);
     ts::return_shared(random_state);
     ts.end();
 }
