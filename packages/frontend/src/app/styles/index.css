@@ -18,11 +18,12 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-body, #root {
+body,
+#root {
   display: flex;
   flex-direction: column;
-  justify-content:center;
-  align-items:center;
+  justify-content: center;
+  align-items: center;
   min-width: 100%;
   min-height: 100vh;
 }

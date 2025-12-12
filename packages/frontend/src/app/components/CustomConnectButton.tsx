@@ -27,7 +27,9 @@ const CustomConnectButton = () => {
           )}
           <DropdownMenu.Item>
             <div className="flex flex-col gap-1">
-              <div className="text-xs text-slate-600 dark:text-slate-400">Address</div>
+              <div className="text-xs text-slate-600 dark:text-slate-400">
+                Address
+              </div>
               <div className="font-mono text-xs">{account.address}</div>
             </div>
           </DropdownMenu.Item>
@@ -42,12 +44,7 @@ const CustomConnectButton = () => {
 
   // Show login button
   return (
-    <Button
-      variant="solid"
-      size="4"
-      onClick={login}
-      disabled={isLoading}
-    >
+    <Button variant="solid" size="4" onClick={login} disabled={isLoading}>
       {isLoading ? 'Connecting...' : 'Login with Google'}
     </Button>
   )

@@ -123,7 +123,8 @@ const GreetingForm = () => {
     return (
       <div className="flex flex-col items-center gap-4">
         <div className="text-center text-lg text-slate-600 dark:text-slate-400">
-          Please connect your wallet using the &quot;Login with Google&quot; button in the header
+          Please connect your wallet using the &quot;Login with Google&quot;
+          button in the header
         </div>
       </div>
     )

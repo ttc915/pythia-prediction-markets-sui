@@ -20,8 +20,8 @@ const NetworkSupportChecker = () => {
   return (
     <div className="mx-auto w-full max-w-lg px-3 py-2">
       <div className="w-full rounded border border-red-400 px-3 py-2 text-center text-red-400">
-        The <span className="font-bold">{network}</span> network is not currently
-        supported by the app.
+        The <span className="font-bold">{network}</span> network is not
+        currently supported by the app.
         <br />
         Please switch to a supported network [
         <span className="font-bold">{okNetworks.join(', ')}</span>] using the

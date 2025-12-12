@@ -5,9 +5,9 @@ import { Transaction } from '@mysten/sui/transactions'
 import { useZKLogin } from '~~/hooks/useZKLogin'
 
 interface UseZKLoginTransactOptions {
-    onBeforeStart?: () => void
-    onSuccess?: (data: any) => void
-    onError?: (error: Error) => void
+  onBeforeStart?: () => void
+  onSuccess?: (data: any) => void
+  onError?: (error: Error) => void
 }
 
 /**
@@ -15,36 +15,37 @@ interface UseZKLoginTransactOptions {
  * Similar to useTransact from @suiware/kit but adapted for zkLogin
  */
 export function useZKLoginTransact(options: UseZKLoginTransactOptions = {}) {
-    const { signAndExecuteTransaction } = useZKLogin()
-    const { onBeforeStart, onSuccess, onError } = options
+  const { signAndExecuteTransaction } = useZKLogin()
+  const { onBeforeStart, onSuccess, onError } = options
 
-    const transact = useCallback(
-        async (transaction: Transaction) => {
-            try {
-                if (onBeforeStart) {
-                    onBeforeStart()
-                }
+  const transact = useCallback(
+    async (transaction: Transaction) => {
+      try {
+        if (onBeforeStart) {
+          onBeforeStart()
+        }
 
-                const result = await signAndExecuteTransaction(transaction)
+        const result = await signAndExecuteTransaction(transaction)
 
-                if (onSuccess) {
-                    onSuccess(result)
-                }
+        if (onSuccess) {
+          onSuccess(result)
+        }
 
-                return result
-            } catch (error) {
-                console.error('Transaction error:', error)
-                const err = error instanceof Error ? error : new Error('Transaction failed')
+        return result
+      } catch (error) {
+        console.error('Transaction error:', error)
+        const err =
+          error instanceof Error ? error : new Error('Transaction failed')
 
-                if (onError) {
-                    onError(err)
-                }
+        if (onError) {
+          onError(err)
+        }
 
-                throw err
-            }
-        },
-        [signAndExecuteTransaction, onBeforeStart, onSuccess, onError]
-    )
+        throw err
+      }
+    },
+    [signAndExecuteTransaction, onBeforeStart, onSuccess, onError]
+  )
 
-    return { transact }
+  return { transact }
 }

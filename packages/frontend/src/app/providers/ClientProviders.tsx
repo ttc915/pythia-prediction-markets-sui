@@ -28,9 +28,7 @@ export default function ClientProviders({ children }: { children: ReactNode }) {
           walletStashedName={APP_NAME}
           themeSettings={themeSettings}
         >
-          <ZKLoginProvider>
-            {children}
-          </ZKLoginProvider>
+          <ZKLoginProvider>{children}</ZKLoginProvider>
         </SuiProvider>
       </ThemeProvider>
     </NextThemeProvider>
