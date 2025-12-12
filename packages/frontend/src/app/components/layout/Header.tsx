@@ -1,7 +1,6 @@
 'use client'
 
 import { Link } from '@radix-ui/themes'
-import NetworkType from '@suiware/kit/NetworkType'
 import { APP_NAME } from '../../config/main'
 import Image from 'next/image'
 import Logo from '../../assets/logo.svg'

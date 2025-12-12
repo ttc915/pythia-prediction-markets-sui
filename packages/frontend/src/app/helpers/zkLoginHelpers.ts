@@ -4,7 +4,6 @@ import { SuiClient } from '@mysten/sui/client'
 import {
   generateNonce,
   generateRandomness,
-  getExtendedEphemeralPublicKey,
   jwtToAddress,
   genAddressSeed,
   getZkLoginSignature,
@@ -14,7 +13,6 @@ import { ZKLOGIN_CONFIG, getGoogleOAuthURL } from '~~/config/zkLoginConfig'
 import type {
   DecodedJWT,
   EphemeralKeyPair,
-  ZKProof,
 } from '~~/types/zkLoginTypes'
 
 /**

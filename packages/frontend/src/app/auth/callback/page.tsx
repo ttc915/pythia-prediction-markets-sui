@@ -2,19 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { SuiClient } from '@mysten/sui/client'
-import { getFullnodeUrl } from '@mysten/sui/client'
-import { getExtendedEphemeralPublicKey } from '@mysten/sui/zklogin'
 import {
   decodeJWT,
   fetchUserSalt,
   fetchZKProof,
   computeZkLoginAddress,
   restoreSession,
-  restoreEphemeralKeyPair,
 } from '~~/helpers/zkLoginHelpers'
 import { setZKLoginSession } from '~~/context/zkLoginContext'
-import { ENetwork } from '~~/types/ENetwork'
 import type { ZKLoginAccount } from '~~/types/zkLoginTypes'
 
 export default function AuthCallback() {

@@ -64,7 +64,7 @@ const ZKLoginFaucet = ({ onSuccess, onError }: ZKLoginFaucetProps) => {
         )
       }
 
-      const data = await response.json()
+      await response.json() // Consume the response
       onSuccess?.(null, `Successfully received SUI tokens on ${network}!`)
     } catch (error) {
       console.error('Faucet error:', error)
