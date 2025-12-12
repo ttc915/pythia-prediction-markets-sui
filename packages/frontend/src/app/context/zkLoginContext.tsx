@@ -1,7 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react'
-import { SuiClient } from '@mysten/sui/client'
+import { SuiClient, getFullnodeUrl } from '@mysten/sui/client'
 import { Transaction } from '@mysten/sui/transactions'
 import { getExtendedEphemeralPublicKey } from '@mysten/sui/zklogin'
 import type { ZKLoginContextValue, ZKLoginAccount, EphemeralKeyPair } from '~~/types/zkLoginTypes'
@@ -23,14 +23,13 @@ const ZKLoginContext = createContext<ZKLoginContextValue | null>(null)
 // Provider props
 interface ZKLoginProviderProps {
     children: ReactNode
-    suiClient: SuiClient
 }
 
 /**
  * ZKLogin Context Provider
  * Manages zkLogin authentication state and operations
  */
-export function ZKLoginProvider({ children, suiClient }: ZKLoginProviderProps) {
+export function ZKLoginProvider({ children }: ZKLoginProviderProps) {
     const [account, setAccount] = useState<ZKLoginAccount | null>(null)
     const [ephemeralKeyPair, setEphemeralKeyPair] = useState<EphemeralKeyPair | null>(null)
     const [jwt, setJwt] = useState<string | null>(null)
@@ -39,8 +38,16 @@ export function ZKLoginProvider({ children, suiClient }: ZKLoginProviderProps) {
     const [maxEpoch, setMaxEpoch] = useState<number | null>(null)
     const [randomness, setRandomness] = useState<string | null>(null)
     const [nonce, setNonce] = useState<string | null>(null)
+    const [network, setNetworkState] = useState<string>('testnet')
     const [isLoading, setIsLoading] = useState<boolean>(false)
     const [error, setError] = useState<string | null>(null)
+
+    // Create SuiClient based on selected network
+    const suiClient = React.useMemo(() => {
+        return new SuiClient({
+            url: getFullnodeUrl(network as any)
+        })
+    }, [network])
 
     /**
      * Initialize and restore session on mount
@@ -48,6 +55,11 @@ export function ZKLoginProvider({ children, suiClient }: ZKLoginProviderProps) {
     useEffect(() => {
         const loadSession = async () => {
             const session = restoreSession()
+
+            // Restore network preference or default to testnet
+            if (session.network) {
+                setNetworkState(session.network)
+            }
 
             if (session.account && session.ephemeralKeyPair && session.maxEpoch) {
                 // Check if session is still valid
@@ -140,6 +152,14 @@ export function ZKLoginProvider({ children, suiClient }: ZKLoginProviderProps) {
     }, [suiClient, maxEpoch])
 
     /**
+     * Set network and persist it
+     */
+    const setNetwork = useCallback((newNetwork: string) => {
+        setNetworkState(newNetwork)
+        cacheSession({ network: newNetwork })
+    }, [])
+
+    /**
      * Sign and execute transaction with zkLogin signature
      */
     const signAndExecuteTransaction = useCallback(
@@ -197,6 +217,7 @@ export function ZKLoginProvider({ children, suiClient }: ZKLoginProviderProps) {
         maxEpoch,
         randomness,
         nonce,
+        network,
         isLoading,
         error,
         login,
@@ -204,6 +225,7 @@ export function ZKLoginProvider({ children, suiClient }: ZKLoginProviderProps) {
         signAndExecuteTransaction,
         getAddress,
         isSessionValid: isSessionValidCheck,
+        setNetwork,
     }
 
     return (

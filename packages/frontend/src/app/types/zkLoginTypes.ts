@@ -31,6 +31,7 @@ export interface ZKLoginState {
     maxEpoch: number | null
     randomness: string | null
     nonce: string | null
+    network: string
     isLoading: boolean
     error: string | null
 }
@@ -46,6 +47,7 @@ export interface ZKLoginContextValue extends ZKLoginState {
     // Utility methods
     getAddress: () => string | null
     isSessionValid: () => Promise<boolean>
+    setNetwork: (network: string) => void
 }
 
 export interface OAuthProviderConfig {

@@ -20,6 +20,7 @@ export const ZKLOGIN_CONFIG = {
         NONCE: 'zklogin_nonce',
         ACCOUNT: 'zklogin_account',
         EXTENDED_EPH_PUBLIC_KEY: 'zklogin_extended_eph_public_key',
+        NETWORK: 'zklogin_network',
     },
 
     // Default epoch offset (ephemeral key will be valid for 2 epochs)

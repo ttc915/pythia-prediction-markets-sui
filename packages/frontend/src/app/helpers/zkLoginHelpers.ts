@@ -226,6 +226,7 @@ export function cacheSession(data: {
     nonce?: string
     account?: any
     extendedEphemeralPublicKey?: string
+    network?: string
 }): void {
     if (typeof window === 'undefined') return
 
@@ -269,6 +270,10 @@ export function cacheSession(data: {
     if (data.extendedEphemeralPublicKey) {
         sessionStorage.setItem(STORAGE_KEYS.EXTENDED_EPH_PUBLIC_KEY, data.extendedEphemeralPublicKey)
     }
+
+    if (data.network) {
+        sessionStorage.setItem(STORAGE_KEYS.NETWORK, data.network)
+    }
 }
 
 /**
@@ -284,6 +289,7 @@ export function restoreSession(): {
     nonce: string | null
     account: any | null
     extendedEphemeralPublicKey: string | null
+    network: string | null
 } {
     if (typeof window === 'undefined') {
         return {
@@ -296,6 +302,7 @@ export function restoreSession(): {
             nonce: null,
             account: null,
             extendedEphemeralPublicKey: null,
+            network: null,
         }
     }
 
@@ -310,6 +317,7 @@ export function restoreSession(): {
     const nonce = sessionStorage.getItem(STORAGE_KEYS.NONCE)
     const accountStr = sessionStorage.getItem(STORAGE_KEYS.ACCOUNT)
     const extendedEphemeralPublicKey = sessionStorage.getItem(STORAGE_KEYS.EXTENDED_EPH_PUBLIC_KEY)
+    const network = sessionStorage.getItem(STORAGE_KEYS.NETWORK)
 
     return {
         ephemeralKeyPair: ephemeralKeyPairStr ? JSON.parse(ephemeralKeyPairStr) : null,
@@ -321,6 +329,7 @@ export function restoreSession(): {
         nonce,
         account: accountStr ? JSON.parse(accountStr) : null,
         extendedEphemeralPublicKey,
+        network,
     }
 }
 
