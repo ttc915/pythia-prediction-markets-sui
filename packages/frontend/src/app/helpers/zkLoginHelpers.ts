@@ -10,10 +10,7 @@ import {
 } from '@mysten/sui/zklogin'
 import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519'
 import { ZKLOGIN_CONFIG, getGoogleOAuthURL } from '~~/config/zkLoginConfig'
-import type {
-  DecodedJWT,
-  EphemeralKeyPair,
-} from '~~/types/zkLoginTypes'
+import type { DecodedJWT, EphemeralKeyPair } from '~~/types/zkLoginTypes'
 
 /**
  * Generate ephemeral key pair for zkLogin

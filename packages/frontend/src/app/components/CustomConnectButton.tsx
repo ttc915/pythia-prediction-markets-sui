@@ -1,10 +1,14 @@
 'use client'
 
+import { useState } from 'react'
 import { Button, DropdownMenu } from '@radix-ui/themes'
-import { useZKLogin } from '~~/hooks/useZKLogin'
+import { useUnifiedWallet } from '~~/context/UnifiedWalletContext'
+import ConnectModal from './ConnectModal'
 
 const CustomConnectButton = () => {
-  const { account, login, logout, isLoading } = useZKLogin()
+  const { account, accountType, disconnect, loginWithGoogle, isLoading } =
+    useUnifiedWallet()
+  const [modalOpen, setModalOpen] = useState(false)
 
   if (account) {
     // Show connected account with dropdown menu
@@ -28,25 +32,40 @@ const CustomConnectButton = () => {
           <DropdownMenu.Item>
             <div className="flex flex-col gap-1">
               <div className="text-xs text-slate-600 dark:text-slate-400">
-                Address
+                {accountType === 'zklogin'
+                  ? 'zkLogin Address'
+                  : 'Wallet Address'}
               </div>
               <div className="font-mono text-xs">{account.address}</div>
             </div>
           </DropdownMenu.Item>
           <DropdownMenu.Separator />
-          <DropdownMenu.Item color="red" onClick={logout}>
-            Logout
+          <DropdownMenu.Item color="red" onClick={disconnect}>
+            Disconnect
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
     )
   }
 
-  // Show login button
+  // Show connect button with modal
   return (
-    <Button variant="solid" size="4" onClick={login} disabled={isLoading}>
-      {isLoading ? 'Connecting...' : 'Login with Google'}
-    </Button>
+    <>
+      <Button
+        variant="solid"
+        size="4"
+        onClick={() => setModalOpen(true)}
+        disabled={isLoading}
+      >
+        {isLoading ? 'Connecting...' : 'Connect'}
+      </Button>
+
+      <ConnectModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        onZKLoginClick={loginWithGoogle}
+      />
+    </>
   )
 }
 

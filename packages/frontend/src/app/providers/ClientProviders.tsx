@@ -7,6 +7,7 @@ import SuiProvider from '@suiware/kit/SuiProvider'
 import { ThemeProvider as NextThemeProvider } from 'next-themes'
 import { ReactNode } from 'react'
 import { ZKLoginProvider } from '~~/context/zkLoginContext'
+import { UnifiedWalletProvider } from '~~/context/UnifiedWalletContext'
 import useNetworkConfig from '~~/hooks/useNetworkConfig'
 import { APP_NAME } from '../config/main'
 import { getThemeSettings } from '../helpers/theme'
@@ -28,7 +29,9 @@ export default function ClientProviders({ children }: { children: ReactNode }) {
           walletStashedName={APP_NAME}
           themeSettings={themeSettings}
         >
-          <ZKLoginProvider>{children}</ZKLoginProvider>
+          <ZKLoginProvider>
+            <UnifiedWalletProvider>{children}</UnifiedWalletProvider>
+          </ZKLoginProvider>
         </SuiProvider>
       </ThemeProvider>
     </NextThemeProvider>

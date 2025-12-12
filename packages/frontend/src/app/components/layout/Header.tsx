@@ -5,7 +5,7 @@ import { APP_NAME } from '../../config/main'
 import Image from 'next/image'
 import Logo from '../../assets/logo.svg'
 import CustomConnectButton from '../CustomConnectButton'
-import ZKLoginBalance from '../ZKLoginBalance'
+import UnifiedBalance from '../UnifiedBalance'
 import NetworkSelector from '../NetworkSelector'
 
 const Header = () => {
@@ -27,7 +27,7 @@ const Header = () => {
 
       <div className="flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
         <div className="flex flex-row items-center justify-center gap-3">
-          <ZKLoginBalance />
+          <UnifiedBalance />
           <NetworkSelector />
         </div>
 

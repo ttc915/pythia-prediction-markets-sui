@@ -4,7 +4,7 @@ import { SuiSignAndExecuteTransactionOutput } from '@mysten/wallet-standard'
 import { Button, TextField } from '@radix-ui/themes'
 import Image from 'next/image'
 import { ChangeEvent, FC, MouseEvent, PropsWithChildren, useState } from 'react'
-import { useZKLogin } from '~~/hooks/useZKLogin'
+import { useUnifiedWallet } from '~~/context/UnifiedWalletContext'
 import { useZKLoginTransact } from '~~/hooks/useZKLoginTransact'
 import Loading from '~~/components/Loading'
 import {
@@ -29,7 +29,7 @@ import useNetworkConfig from '~~/hooks/useNetworkConfig'
 
 const GreetingForm = () => {
   const [name, setName] = useState<string>('')
-  const { account } = useZKLogin()
+  const { account } = useUnifiedWallet()
   const { data, isPending, error, refetch } = useOwnGreeting()
   const { useNetworkVariable } = useNetworkConfig()
   const packageId = useNetworkVariable(CONTRACT_PACKAGE_VARIABLE_NAME)

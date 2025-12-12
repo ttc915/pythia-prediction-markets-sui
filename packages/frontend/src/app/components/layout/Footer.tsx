@@ -1,8 +1,8 @@
 'use client'
 
 import { Link } from '@radix-ui/themes'
-import { useZKLogin } from '~~/hooks/useZKLogin'
-import ZKLoginFaucet from '../ZKLoginFaucet'
+import { useUnifiedWallet } from '~~/context/UnifiedWalletContext'
+import UnifiedFaucet from '../UnifiedFaucet'
 import { HeartIcon, SearchIcon } from 'lucide-react'
 import {
   CONTRACT_PACKAGE_VARIABLE_NAME,
@@ -18,14 +18,14 @@ const Footer = () => {
   const networkVariables = useNetworkVariables()
   const explorerUrl = networkVariables[EXPLORER_URL_VARIABLE_NAME]
   const packageId = networkVariables[CONTRACT_PACKAGE_VARIABLE_NAME]
-  const { account } = useZKLogin()
+  const { account } = useUnifiedWallet()
 
   return (
     <footer className="flex w-full flex-col items-center justify-between gap-3 p-3 sm:flex-row sm:items-end">
       <div className="flex flex-row gap-3 lg:w-1/3">
         {account != null && (
           <>
-            <ZKLoginFaucet
+            <UnifiedFaucet
               onError={notification.error}
               onSuccess={notification.success}
             />
