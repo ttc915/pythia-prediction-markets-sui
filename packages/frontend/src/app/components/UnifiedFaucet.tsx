@@ -16,13 +16,13 @@ interface UnifiedFaucetProps {
 const getFaucetUrl = (network: string): string => {
   switch (network) {
     case 'devnet':
-      return 'https://faucet.devnet.sui.io/v1/gas'
+      return 'https://faucet.devnet.sui.io/v2/gas'
     case 'testnet':
-      return 'https://faucet.testnet.sui.io/v1/gas'
+      return 'https://faucet.testnet.sui.io/v2/gas'
     case 'localnet':
       return 'http://localhost:9123/gas'
     default:
-      return 'https://faucet.testnet.sui.io/v1/gas'
+      return 'https://faucet.testnet.sui.io/v2/gas'
   }
 }
 
