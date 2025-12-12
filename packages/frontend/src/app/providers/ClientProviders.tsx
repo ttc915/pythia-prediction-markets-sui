@@ -6,6 +6,9 @@ import '@suiware/kit/main.css'
 import SuiProvider from '@suiware/kit/SuiProvider'
 import { ThemeProvider as NextThemeProvider } from 'next-themes'
 import { ReactNode } from 'react'
+import { SuiClient } from '@mysten/sui/client'
+import { getFullnodeUrl } from '@mysten/sui/client'
+import { ZKLoginProvider } from '~~/context/zkLoginContext'
 import useNetworkConfig from '~~/hooks/useNetworkConfig'
 import { APP_NAME } from '../config/main'
 import { getThemeSettings } from '../helpers/theme'
@@ -17,6 +20,11 @@ const themeSettings = getThemeSettings()
 export default function ClientProviders({ children }: { children: ReactNode }) {
   const { networkConfig } = useNetworkConfig()
 
+  // Create Sui client for current network (defaulting to localnet)
+  const suiClient = new SuiClient({
+    url: getFullnodeUrl(ENetwork.LOCALNET)
+  })
+
   return (
     <NextThemeProvider attribute="class">
       <ThemeProvider>
@@ -27,7 +35,9 @@ export default function ClientProviders({ children }: { children: ReactNode }) {
           walletStashedName={APP_NAME}
           themeSettings={themeSettings}
         >
-          {children}
+          <ZKLoginProvider suiClient={suiClient}>
+            {children}
+          </ZKLoginProvider>
         </SuiProvider>
       </ThemeProvider>
     </NextThemeProvider>

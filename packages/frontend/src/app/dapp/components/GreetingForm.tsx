@@ -1,11 +1,11 @@
 'use client'
 
-import { useCurrentAccount } from '@mysten/dapp-kit'
 import { SuiSignAndExecuteTransactionOutput } from '@mysten/wallet-standard'
 import { Button, TextField } from '@radix-ui/themes'
-import useTransact from '@suiware/kit/useTransact'
 import Image from 'next/image'
 import { ChangeEvent, FC, MouseEvent, PropsWithChildren, useState } from 'react'
+import { useZKLogin } from '~~/hooks/useZKLogin'
+import { useZKLoginTransact } from '~~/hooks/useZKLoginTransact'
 import CustomConnectButton from '~~/components/CustomConnectButton'
 import Loading from '~~/components/Loading'
 import {
@@ -30,14 +30,14 @@ import useNetworkConfig from '~~/hooks/useNetworkConfig'
 
 const GreetingForm = () => {
   const [name, setName] = useState<string>('')
-  const currentAccount = useCurrentAccount()
+  const { account } = useZKLogin()
   const { data, isPending, error, refetch } = useOwnGreeting()
   const { useNetworkVariable } = useNetworkConfig()
   const packageId = useNetworkVariable(CONTRACT_PACKAGE_VARIABLE_NAME)
   const [notificationId, setNotificationId] = useState<string>()
   const explorerUrl = useNetworkVariable(EXPLORER_URL_VARIABLE_NAME)
 
-  const { transact: create } = useTransact({
+  const { transact: create } = useZKLoginTransact({
     onBeforeStart: () => {
       const nId = notification.txLoading()
       setNotificationId(nId)
@@ -53,7 +53,7 @@ const GreetingForm = () => {
       notification.txError(e, null, notificationId)
     },
   })
-  const { transact: greet } = useTransact({
+  const { transact: greet } = useZKLoginTransact({
     onBeforeStart: () => {
       const nId = notification.txLoading()
       setNotificationId(nId)
@@ -69,7 +69,7 @@ const GreetingForm = () => {
       notification.txError(e, null, notificationId)
     },
   })
-  const { transact: reset } = useTransact({
+  const { transact: reset } = useZKLoginTransact({
     onBeforeStart: () => {
       const nId = notification.txLoading()
       setNotificationId(nId)
@@ -120,7 +120,7 @@ const GreetingForm = () => {
     reset(prepareResetGreetingTransaction(packageId, objectId))
   }
 
-  if (currentAccount == null) return <CustomConnectButton />
+  if (account == null) return <CustomConnectButton />
 
   if (isPending) return <Loading />
 

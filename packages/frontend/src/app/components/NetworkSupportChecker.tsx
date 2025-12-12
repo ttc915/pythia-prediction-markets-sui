@@ -1,16 +1,16 @@
 'use client'
 
-import { useCurrentAccount } from '@mysten/dapp-kit'
 import useNetworkType from '@suiware/kit/useNetworkType'
+import { useZKLogin } from '~~/hooks/useZKLogin'
 import { isNetworkSupported, supportedNetworks } from '../helpers/network'
 
 const NetworkSupportChecker = () => {
   const { networkType } = useNetworkType()
-  const currentAccount = useCurrentAccount()
+  const { account } = useZKLogin()
 
   const okNetworks = supportedNetworks()
 
-  if (currentAccount == null || okNetworks.length === 0) {
+  if (account == null || okNetworks.length === 0) {
     return <></>
   }
 

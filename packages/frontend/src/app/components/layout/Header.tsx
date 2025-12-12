@@ -1,12 +1,12 @@
 'use client'
 
-import { ConnectButton } from '@mysten/dapp-kit'
 import { Link } from '@radix-ui/themes'
 import Balance from '@suiware/kit/Balance'
 import NetworkType from '@suiware/kit/NetworkType'
 import { APP_NAME } from '../../config/main'
 import Image from 'next/image'
 import Logo from '../../assets/logo.svg'
+import CustomConnectButton from '../CustomConnectButton'
 
 const Header = () => {
   return (
@@ -31,10 +31,8 @@ const Header = () => {
           <NetworkType />
         </div>
 
-        {/* @todo: Find a better way to style ConnectButton for example through className, which is currently not supported. */}
-        {/* className="[&>button]:!px-4 [&>button]:!py-2 [&>div]:!text-base" */}
         <div className="sds-connect-button-container">
-          <ConnectButton />
+          <CustomConnectButton />
         </div>
       </div>
     </header>
