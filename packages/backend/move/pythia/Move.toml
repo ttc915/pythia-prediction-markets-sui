@@ -1,9 +1,9 @@
 [package]
-name = "greeting"
+name = "pythia"
 edition = "2024"
 
 [dependencies]
 Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/testnet" }
 
 [addresses]
-greeting = "0x0"
+pythia = "0x0"
