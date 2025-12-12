@@ -34,10 +34,6 @@ const EResolutionDeadlinePassed: u64 = 13;
 const EInvalidArbiterCount: u64 = 14;
 const EMustBeLosingBettor: u64 = 15;
 
-// ... (existing code)
-
-// Duplicate functions removed. Original functions at top are correct.
-
 // === One-Time Witness ===
 
 public struct PYTHIA has drop {}
@@ -630,14 +626,17 @@ fun settle_market(market: &mut Market, config: &mut ProtocolConfig, ctx: &mut Tx
     if (arbiter_amt > 0) {
         let mut arbiter_coin = coin::take(&mut market.pot_yes, arbiter_amt, ctx);
 
-        // Filter correct voters
+        // Filter correct voters (approved arbiters who voted correctly)
         let final_outcome = *option::borrow(&market.outcome);
         let mut correct_voter_count = 0;
         let mut i = 0;
         while (i < vec_map::length(&market.arbiter_votes)) {
-            let (_, vote) = vec_map::get_entry_by_idx(&market.arbiter_votes, i);
-            if (*vote == final_outcome) {
-                correct_voter_count = correct_voter_count + 1;
+            let (arbiter_addr, vote) = vec_map::get_entry_by_idx(&market.arbiter_votes, i);
+            if (*vote == final_outcome && vec_map::contains(&config.arbiters, arbiter_addr)) {
+                let profile = vec_map::get(&config.arbiters, arbiter_addr);
+                if (profile.approved) {
+                    correct_voter_count = correct_voter_count + 1;
+                };
             };
             i = i + 1;
         };
@@ -648,15 +647,18 @@ fun settle_market(market: &mut Market, config: &mut ProtocolConfig, ctx: &mut Tx
             while (i < vec_map::length(&market.arbiter_votes)) {
                 let (arbiter_addr, vote) = vec_map::get_entry_by_idx(&market.arbiter_votes, i);
 
-                // Only pay if correct AND exists in protocol config (to update earnings)
-                // We do NOT check approved status, as they performed work while valid or assigned.
+                // Only pay if correct, approved, and exists in protocol config
                 if (*vote == final_outcome && vec_map::contains(&config.arbiters, arbiter_addr)) {
-                    let payment = coin::split(&mut arbiter_coin, share_amount, ctx);
-                    transfer::public_transfer(payment, *arbiter_addr);
+                    let profile = vec_map::get(&config.arbiters, arbiter_addr);
+                    if (profile.approved) {
+                        let payment = coin::split(&mut arbiter_coin, share_amount, ctx);
+                        transfer::public_transfer(payment, *arbiter_addr);
 
-                    // Update earnings
-                    let profile = vec_map::get_mut(&mut config.arbiters, arbiter_addr);
-                    profile.total_earnings = profile.total_earnings + share_amount;
+                        // Update earnings and correct resolutions
+                        let mut_profile = vec_map::get_mut(&mut config.arbiters, arbiter_addr);
+                        mut_profile.total_earnings = mut_profile.total_earnings + share_amount;
+                        mut_profile.correct_resolutions = mut_profile.correct_resolutions + 1;
+                    };
                 };
                 i = i + 1;
             };
