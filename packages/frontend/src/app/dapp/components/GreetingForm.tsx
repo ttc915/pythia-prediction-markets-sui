@@ -6,7 +6,6 @@ import Image from 'next/image'
 import { ChangeEvent, FC, MouseEvent, PropsWithChildren, useState } from 'react'
 import { useZKLogin } from '~~/hooks/useZKLogin'
 import { useZKLoginTransact } from '~~/hooks/useZKLoginTransact'
-import CustomConnectButton from '~~/components/CustomConnectButton'
 import Loading from '~~/components/Loading'
 import {
   CONTRACT_PACKAGE_VARIABLE_NAME,
@@ -120,7 +119,15 @@ const GreetingForm = () => {
     reset(prepareResetGreetingTransaction(packageId, objectId))
   }
 
-  if (account == null) return <CustomConnectButton />
+  if (account == null) {
+    return (
+      <div className="flex flex-col items-center gap-4">
+        <div className="text-center text-lg text-slate-600 dark:text-slate-400">
+          Please connect your wallet using the &quot;Login with Google&quot; button in the header
+        </div>
+      </div>
+    )
+  }
 
   if (isPending) return <Loading />
 

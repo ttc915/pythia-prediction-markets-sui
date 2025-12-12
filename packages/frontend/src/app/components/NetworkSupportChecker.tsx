@@ -1,12 +1,10 @@
 'use client'
 
-import useNetworkType from '@suiware/kit/useNetworkType'
 import { useZKLogin } from '~~/hooks/useZKLogin'
 import { isNetworkSupported, supportedNetworks } from '../helpers/network'
 
 const NetworkSupportChecker = () => {
-  const { networkType } = useNetworkType()
-  const { account } = useZKLogin()
+  const { account, network } = useZKLogin()
 
   const okNetworks = supportedNetworks()
 
@@ -14,21 +12,20 @@ const NetworkSupportChecker = () => {
     return <></>
   }
 
-  // @fixme: Find a better type for the networkType.
-  /* eslint-disable  @typescript-eslint/no-explicit-any */
-  if (networkType == null || isNetworkSupported(networkType as any)) {
+  // Check if zkLogin network is supported
+  if (network == null || isNetworkSupported(network as any)) {
     return <></>
   }
 
   return (
     <div className="mx-auto w-full max-w-lg px-3 py-2">
       <div className="w-full rounded border border-red-400 px-3 py-2 text-center text-red-400">
-        The <span className="font-bold">{networkType}</span> is not currently
+        The <span className="font-bold">{network}</span> network is not currently
         supported by the app.
         <br />
         Please switch to a supported network [
-        <span className="font-bold">{okNetworks.join(', ')}</span>] in your
-        wallet settings.
+        <span className="font-bold">{okNetworks.join(', ')}</span>] using the
+        network selector in the header.
       </div>
     </div>
   )

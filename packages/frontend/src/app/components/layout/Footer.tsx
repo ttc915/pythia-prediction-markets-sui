@@ -2,7 +2,7 @@
 
 import { Link } from '@radix-ui/themes'
 import { useZKLogin } from '~~/hooks/useZKLogin'
-import Faucet from '@suiware/kit/Faucet'
+import ZKLoginFaucet from '../ZKLoginFaucet'
 import { HeartIcon, SearchIcon } from 'lucide-react'
 import {
   CONTRACT_PACKAGE_VARIABLE_NAME,
@@ -25,7 +25,7 @@ const Footer = () => {
       <div className="flex flex-row gap-3 lg:w-1/3">
         {account != null && (
           <>
-            <Faucet
+            <ZKLoginFaucet
               onError={notification.error}
               onSuccess={notification.success}
             />
