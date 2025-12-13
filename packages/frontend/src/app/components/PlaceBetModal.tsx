@@ -1,18 +1,17 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Dialog, Button, Flex, Text, TextField } from '@radix-ui/themes'
+import { Dialog, Button, Flex, Text } from '@radix-ui/themes'
 import { Wallet, Check, AlertCircle, TrendingUp } from 'lucide-react'
 import { useSuiClient } from '@mysten/dapp-kit'
 import { usePythia } from '~~/hooks/usePythia'
 import { useUnifiedWallet } from '~~/context/UnifiedWalletContext'
-import { Market, ProtocolConfig } from '~~/types/pythia.types'
+import { Market } from '~~/types/pythia.types'
 import {
   suiToMist,
   mistToSui,
   calculateOdds,
   estimateWinnings,
-  SUI_TO_MIST,
 } from '~~/helpers/formatters'
 import ConnectModal from './ConnectModal'
 

@@ -1,4 +1,4 @@
-import { Button, Dialog, Flex, IconButton, Text } from '@radix-ui/themes'
+import { Button, Dialog, Flex, IconButton } from '@radix-ui/themes'
 import { UserPlus, X } from 'lucide-react'
 import { useAutoCreateProfile } from '~~/hooks/useAutoCreateProfile'
 

@@ -4,9 +4,6 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
 
-    // Forward request to Mysten Labs prover service
-    const { network } = body
-
     // Always use the configured prover URL (defaults to prover-dev)
     // prover-dev supports both devnet and testnet (with the demo client ID)
     const proverUrl =
