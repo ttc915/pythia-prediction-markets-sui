@@ -91,7 +91,11 @@ const CustomConnectButton = () => {
           <DropdownMenu.Separator />
           <DropdownMenu.Item
             color="red"
-            onClick={disconnect}
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              disconnect()
+            }}
             className="cursor-pointer"
           >
             <div className="w-full text-center font-medium">Disconnect</div>
