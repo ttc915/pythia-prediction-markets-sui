@@ -140,6 +140,7 @@ export default function PlaceBetModal({
         amount: amountMist,
       })
 
+      console.log({ result, message: 'Bet placed result' })
       if (result.positionId) {
         setPositionId(result.positionId)
         setSuccess(true)
