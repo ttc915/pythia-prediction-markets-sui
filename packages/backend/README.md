@@ -30,6 +30,12 @@ pnpm run build
 
 # Run Move tests
 pnpm run test
+
+# Deploy to testnet
+pnpm run testnet:deploy
+
+# CLI deploy
+sui client publish --gas-budget 1000000000 ./move/pythia
 ```
 
 #### Test Coverage
