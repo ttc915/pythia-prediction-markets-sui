@@ -8,6 +8,7 @@ import { ThemeProvider as NextThemeProvider } from 'next-themes'
 import { ReactNode } from 'react'
 import { ZKLoginProvider } from '~~/context/zkLoginContext'
 import { UnifiedWalletProvider } from '~~/context/UnifiedWalletContext'
+import { PythiaProvider } from '~~/context/PythiaContext'
 import useNetworkConfig from '~~/hooks/useNetworkConfig'
 import { APP_NAME } from '../config/main'
 import { getThemeSettings } from '../helpers/theme'
@@ -30,10 +31,13 @@ export default function ClientProviders({ children }: { children: ReactNode }) {
           themeSettings={themeSettings}
         >
           <ZKLoginProvider>
-            <UnifiedWalletProvider>{children}</UnifiedWalletProvider>
+            <UnifiedWalletProvider>
+              <PythiaProvider>{children}</PythiaProvider>
+            </UnifiedWalletProvider>
           </ZKLoginProvider>
         </SuiProvider>
       </ThemeProvider>
     </NextThemeProvider>
   )
 }
+
