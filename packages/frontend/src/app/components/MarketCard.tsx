@@ -2,17 +2,26 @@
 
 import { useState } from 'react'
 import { Card, Flex, Text, Button, Badge } from '@radix-ui/themes'
-import { TrendingUp, TrendingDown, Clock, Trophy } from 'lucide-react'
+import { TrendingUp, TrendingDown, Clock } from 'lucide-react'
 import { Market } from '~~/types/pythia.types'
 
 export interface MarketCardProps {
+  activeTab: string
   market: Market
+  onArbitrageYes?: (market: Market) => void
+  onArbitrageNo?: (market: Market) => void
   onBetYes?: (market: Market) => void
   onBetNo?: (market: Market) => void
 }
 
-const MarketCard = ({ market, onBetYes, onBetNo }: MarketCardProps) => {
-  // Parse values from string to number
+const MarketCard = ({
+  activeTab,
+  market,
+  onArbitrageYes,
+  onArbitrageNo,
+  onBetYes,
+  onBetNo,
+}: MarketCardProps) => {
   const totalYes = parseInt(market.total_yes_amount)
   const totalNo = parseInt(market.total_no_amount)
   const bettingEndTime = parseInt(market.betting_end_time)
@@ -21,7 +30,6 @@ const MarketCard = ({ market, onBetYes, onBetNo }: MarketCardProps) => {
   const yesPercentage = totalPool > 0 ? (totalYes / totalPool) * 100 : 50
   const noPercentage = totalPool > 0 ? (totalNo / totalPool) * 100 : 50
 
-  // Format pool in SUI (divide by 1B MIST)
   const formattedPool = (totalPool / 1_000_000_000).toFixed(2)
 
   // Calculate time remaining - using useState to avoid impure function during render
@@ -49,6 +57,21 @@ const MarketCard = ({ market, onBetYes, onBetNo }: MarketCardProps) => {
   const handleBetNo = () => {
     if (onBetNo && !market.resolved && timeRemaining > 0) {
       onBetNo(market)
+    }
+  }
+
+  function handleArbitrageYes() {
+    if (
+      onArbitrageYes &&
+      market.resolved &&
+      activeTab === 'waiting_arbitrage'
+    ) {
+      onArbitrageYes(market)
+    }
+  }
+  function handleArbitrageNo() {
+    if (onArbitrageNo && market.resolved && activeTab === 'waiting_arbitrage') {
+      onArbitrageNo(market)
     }
   }
 
@@ -161,6 +184,26 @@ const MarketCard = ({ market, onBetYes, onBetNo }: MarketCardProps) => {
                 onClick={handleBetNo}
               >
                 Bet NO
+              </Button>
+            </Flex>
+          )}
+
+          {/* Arbitrage Buttons */}
+          {market.resolved && activeTab === 'waiting_arbitrage' && (
+            <Flex gap="3">
+              <Button
+                size="3"
+                className="flex-1 bg-green-500 text-white transition-colors hover:bg-green-600"
+                onClick={handleArbitrageYes}
+              >
+                Arbiter YES
+              </Button>
+              <Button
+                size="3"
+                className="flex-1 bg-red-500 text-white transition-colors hover:bg-red-600"
+                onClick={handleArbitrageNo}
+              >
+                Arbiter NO
               </Button>
             </Flex>
           )}

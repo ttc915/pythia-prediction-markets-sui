@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Button, Flex, Text, Heading, Grid } from '@radix-ui/themes'
 import { Plus } from 'lucide-react'
 import MarketCard from './components/MarketCard'
@@ -9,20 +9,21 @@ import PlaceBetModal from './components/PlaceBetModal'
 import NetworkSupportChecker from './components/NetworkSupportChecker'
 import { usePythia } from '~~/context/PythiaContext'
 import { Market } from '~~/types/pythia.types'
+import { useUnifiedWallet } from './context/UnifiedWalletContext'
 
 export default function Home() {
-  const { getMarkets, isConfigured } = usePythia()
+  const { getMarkets, submitResolution, isConfigured } = usePythia()
+  const { account } = useUnifiedWallet()
 
   const [activeTab, setActiveTab] = useState('active')
   const [selectedMarket, setSelectedMarket] = useState<Market | null>(null)
   const [isBetModalOpen, setIsBetModalOpen] = useState(false)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
-  // Real markets state
   const [markets, setMarkets] = useState<Market[]>([])
   const [isLoading, setIsLoading] = useState(false)
 
-  const fetchMarkets = async () => {
+  const fetchMarkets = useCallback(async () => {
     if (!isConfigured) return
 
     setIsLoading(true)
@@ -34,32 +35,47 @@ export default function Home() {
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [isConfigured, getMarkets])
 
-  // Fetch markets on mount and when configured
   useEffect(() => {
     fetchMarkets()
-  }, [isConfigured])
+  }, [isConfigured, fetchMarkets])
 
-  // Refresh markets periodically (every 30s)
   useEffect(() => {
     const interval = setInterval(fetchMarkets, 30000)
     return () => clearInterval(interval)
-  }, [isConfigured])
+  }, [isConfigured, fetchMarkets])
 
-  // Filter markets based on tab
   const filteredMarkets =
     activeTab === 'active'
       ? markets.filter((m) => !m.resolved)
-      : markets.filter((m) => m.resolved)
+      : activeTab === 'waiting_arbitrage'
+        ? markets.filter((m) =>
+            account?.address ? m.arbiters.includes(account.address) : true
+          )
+        : markets.filter((m) => m.resolved)
 
   const handleOpenBetModal = (market: Market) => {
     setSelectedMarket(market)
     setIsBetModalOpen(true)
   }
 
+  function handleArbitrageYes(market: Market) {
+    submitResolution({
+      marketId: market.id,
+      outcome: true,
+    })
+  }
+
+  function handleArbitrageNo(market: Market) {
+    submitResolution({
+      marketId: market.id,
+      outcome: false,
+    })
+  }
+
   return (
-    <main className="relative min-h-screen bg-slate-50 dark:bg-slate-900">
+    <main className="relative min-h-screen rounded-md bg-slate-50 dark:bg-slate-900">
       <div className="pointer-events-none fixed inset-0 z-[-1] bg-gradient-to-br from-blue-50 to-purple-50 dark:from-slate-900 dark:to-slate-800" />
       <div className="relative z-10">
         <NetworkSupportChecker />
@@ -97,6 +113,14 @@ export default function Home() {
             >
               Resolved
             </Button>
+            {account?.address && (
+              <Button
+                variant={activeTab === 'waiting_arbitrage' ? 'solid' : 'soft'}
+                onClick={() => setActiveTab('waiting_arbitrage')}
+              >
+                Waiting arbitrage
+              </Button>
+            )}
           </Flex>
 
           {/* Markets Grid */}
@@ -104,7 +128,7 @@ export default function Home() {
             <Flex justify="center" py="9">
               <Text>Loading markets...</Text>
             </Flex>
-          ) : filteredMarkets.length === 0 ? (
+          ) : filteredMarkets.length === 0 && activeTab === 'active' ? (
             <Flex
               direction="column"
               align="center"
@@ -122,6 +146,31 @@ export default function Home() {
                 Create Market
               </Button>
             </Flex>
+          ) : filteredMarkets.length === 0 && activeTab === 'resolved' ? (
+            <Flex
+              direction="column"
+              align="center"
+              justify="center"
+              py="9"
+              className="min-h-[50vh] rounded-lg border border-dashed border-slate-300 bg-white/50 dark:border-slate-700 dark:bg-slate-800/50"
+            >
+              <Text size="5" weight="bold" mb="2">
+                No markets resolved yet
+              </Text>
+            </Flex>
+          ) : filteredMarkets.length === 0 &&
+            activeTab === 'waiting_arbitrage' ? (
+            <Flex
+              direction="column"
+              align="center"
+              justify="center"
+              py="9"
+              className="min-h-[50vh] rounded-lg border border-dashed border-slate-300 bg-white/50 dark:border-slate-700 dark:bg-slate-800/50"
+            >
+              <Text size="5" weight="bold" mb="2">
+                No markets to arbitrage at this moment
+              </Text>
+            </Flex>
           ) : (
             <Grid
               columns={{ initial: '1', sm: '2', lg: '3' }}
@@ -132,6 +181,9 @@ export default function Home() {
                 <MarketCard
                   key={market.id}
                   market={market}
+                  activeTab={activeTab}
+                  onArbitrageYes={() => handleArbitrageYes(market)}
+                  onArbitrageNo={() => handleArbitrageNo(market)}
                   onBetYes={() => handleOpenBetModal(market)}
                   onBetNo={() => handleOpenBetModal(market)}
                 />
