@@ -59,83 +59,86 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-slate-900">
-      <NetworkSupportChecker />
-      <div className="container mx-auto px-4 py-8">
-        {/* Header */}
-        <Flex justify="between" align="center" className="mb-8">
-          <div>
-            <Heading size="8" className="mb-2 text-slate-900 dark:text-white">
-              Prediction Markets
-            </Heading>
-            <Text className="text-slate-600 dark:text-slate-400">
-              Bet on future events and earn rewards
-            </Text>
-          </div>
-          <Button
-            size="3"
-            onClick={() => setIsCreateModalOpen(true)}
-            className="cursor-pointer bg-blue-600 text-white hover:bg-blue-700"
-          >
-            <Plus className="mr-2 h-4 w-4" /> Create Market
-          </Button>
-        </Flex>
-
-        {/* Filters */}
-        <Flex gap="4" className="mb-8">
-          <Button
-            variant={activeTab === 'active' ? 'solid' : 'soft'}
-            onClick={() => setActiveTab('active')}
-          >
-            Active Markets
-          </Button>
-          <Button
-            variant={activeTab === 'resolved' ? 'solid' : 'soft'}
-            onClick={() => setActiveTab('resolved')}
-          >
-            Resolved
-          </Button>
-        </Flex>
-
-        {/* Markets Grid */}
-        {isLoading && markets.length === 0 ? (
-          <Flex justify="center" py="9">
-            <Text>Loading markets...</Text>
-          </Flex>
-        ) : filteredMarkets.length === 0 ? (
-          <Flex
-            direction="column"
-            align="center"
-            justify="center"
-            py="9"
-            className="rounded-lg border border-dashed border-slate-300 bg-white/50 dark:border-slate-700 dark:bg-slate-800/50"
-          >
-            <Text size="5" weight="bold" mb="2">
-              No markets found
-            </Text>
-            <Text color="gray" mb="4">
-              Be the first to create a prediction market!
-            </Text>
-            <Button size="3" onClick={() => setIsCreateModalOpen(true)}>
-              Create Market
+    <main className="relative min-h-screen bg-slate-50 dark:bg-slate-900">
+      <div className="pointer-events-none fixed inset-0 z-[-1] bg-gradient-to-br from-blue-50 to-purple-50 dark:from-slate-900 dark:to-slate-800" />
+      <div className="relative z-10">
+        <NetworkSupportChecker />
+        <div className="container mx-auto px-4 py-8">
+          {/* Header */}
+          <Flex justify="between" align="center" className="mb-8">
+            <div>
+              <Heading size="8" className="mb-2 text-slate-900 dark:text-white">
+                Prediction Markets
+              </Heading>
+              <Text className="text-slate-600 dark:text-slate-400">
+                Bet on future events and earn rewards
+              </Text>
+            </div>
+            <Button
+              size="3"
+              onClick={() => setIsCreateModalOpen(true)}
+              className="cursor-pointer bg-blue-600 text-white hover:bg-blue-700"
+            >
+              <Plus className="mr-2 h-4 w-4" /> Create Market
             </Button>
           </Flex>
-        ) : (
-          <Grid
-            columns={{ initial: '1', sm: '2', lg: '3' }}
-            gap="6"
-            className="mb-8"
-          >
-            {filteredMarkets.map((market) => (
-              <MarketCard
-                key={market.id}
-                market={market}
-                onBetYes={() => handleOpenBetModal(market)}
-                onBetNo={() => handleOpenBetModal(market)}
-              />
-            ))}
-          </Grid>
-        )}
+
+          {/* Filters */}
+          <Flex gap="4" className="mb-8">
+            <Button
+              variant={activeTab === 'active' ? 'solid' : 'soft'}
+              onClick={() => setActiveTab('active')}
+            >
+              Active Markets
+            </Button>
+            <Button
+              variant={activeTab === 'resolved' ? 'solid' : 'soft'}
+              onClick={() => setActiveTab('resolved')}
+            >
+              Resolved
+            </Button>
+          </Flex>
+
+          {/* Markets Grid */}
+          {isLoading && markets.length === 0 ? (
+            <Flex justify="center" py="9">
+              <Text>Loading markets...</Text>
+            </Flex>
+          ) : filteredMarkets.length === 0 ? (
+            <Flex
+              direction="column"
+              align="center"
+              justify="center"
+              py="9"
+              className="min-h-[50vh] rounded-lg border border-dashed border-slate-300 bg-white/50 dark:border-slate-700 dark:bg-slate-800/50"
+            >
+              <Text size="5" weight="bold" mb="2">
+                No markets found
+              </Text>
+              <Text color="gray" mb="4">
+                Be the first to create a prediction market!
+              </Text>
+              <Button size="3" onClick={() => setIsCreateModalOpen(true)}>
+                Create Market
+              </Button>
+            </Flex>
+          ) : (
+            <Grid
+              columns={{ initial: '1', sm: '2', lg: '3' }}
+              gap="6"
+              className="mb-8"
+            >
+              {filteredMarkets.map((market) => (
+                <MarketCard
+                  key={market.id}
+                  market={market}
+                  onBetYes={() => handleOpenBetModal(market)}
+                  onBetNo={() => handleOpenBetModal(market)}
+                />
+              ))}
+            </Grid>
+          )}
+        </div>
       </div>
 
       {selectedMarket && (

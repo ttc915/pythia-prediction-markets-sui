@@ -448,10 +448,11 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
         })
 
         const result = await signAndExecuteTransaction(tx)
+        const { digest, effects } = result
 
         return {
-          digest: result.digest,
-          effects: result.effects,
+          digest,
+          effects,
         }
       } catch (err) {
         handleError(err, 'Failed to create user profile')
@@ -483,7 +484,6 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
           arbiterThreshold,
         } = params
 
-        // Validation
         if (bettingEndTime <= Date.now()) {
           throw new Error('Betting end time must be in the future')
         }
@@ -511,7 +511,6 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
 
         const result = await signAndExecuteTransaction(tx)
 
-        // Extract market ID from created objects
         let marketId: string | null = null
         if (result.effects?.created) {
           const createdObjects = result.effects.created
@@ -523,10 +522,12 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
           }
         }
 
+        const { digest, effects } = result
+
         return {
-          digest: result.digest,
+          digest,
           marketId,
-          effects: result.effects,
+          effects,
         }
       } catch (err) {
         handleError(err, 'Failed to create market')
@@ -555,14 +556,12 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
 
         const { marketId, isYes, amount } = params
 
-        // Check if user has a profile, create one if not
         const hasProfile = await checkUserProfileExists()
         let profileId: string
 
         if (!hasProfile) {
           console.log('Creating user profile...')
           await createUserProfile()
-          // Wait a bit for the profile to be indexed
           await new Promise((resolve) => setTimeout(resolve, 2000))
           const profile = await getUserProfile()
           if (!profile) {
@@ -579,7 +578,6 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
 
         const tx = new Transaction()
 
-        // Split coin for the bet amount
         const [coin] = tx.splitCoins(tx.gas, [amount])
 
         tx.moveCall({
@@ -596,7 +594,6 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
 
         const result = await signAndExecuteTransaction(tx)
 
-        // Extract position ID from created objects
         let positionId: string | null = null
         if (result.effects?.created) {
           const createdObjects = result.effects.created
@@ -608,10 +605,12 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
           }
         }
 
+        const { digest, effects } = result
+
         return {
-          digest: result.digest,
+          digest,
           positionId,
-          effects: result.effects,
+          effects,
         }
       } catch (err) {
         handleError(err, 'Failed to place bet')
@@ -643,7 +642,6 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
 
         const { marketId, positionId } = params
 
-        // Get user profile
         const profile = await getUserProfile()
         if (!profile) {
           throw new Error('User profile not found')
@@ -664,13 +662,14 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
 
         const result = await signAndExecuteTransaction(tx)
 
-        // TODO: Parse balance changes to get payout amount
         const payoutAmount = null
 
+        const { digest, effects } = result
+
         return {
-          digest: result.digest,
+          digest,
           payoutAmount,
-          effects: result.effects,
+          effects,
         }
       } catch (err) {
         handleError(err, 'Failed to claim winnings')
@@ -713,10 +712,11 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
         })
 
         const result = await signAndExecuteTransaction(tx)
+        const { digest, effects } = result
 
         return {
-          digest: result.digest,
-          effects: result.effects,
+          digest,
+          effects,
         }
       } catch (err) {
         handleError(err, 'Failed to submit resolution')
@@ -750,7 +750,6 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
         const { marketId, positionId, reason, proposedOutcome, bondAmount } =
           params
 
-        // Get user profile
         const profile = await getUserProfile()
         if (!profile) {
           throw new Error('User profile not found')
@@ -758,7 +757,6 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
 
         const tx = new Transaction()
 
-        // Split coin for bond
         const [bondCoin] = tx.splitCoins(tx.gas, [bondAmount])
 
         tx.moveCall({
@@ -776,10 +774,11 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
         })
 
         const result = await signAndExecuteTransaction(tx)
+        const { digest, effects } = result
 
         return {
-          digest: result.digest,
-          effects: result.effects,
+          digest,
+          effects,
         }
       } catch (err) {
         handleError(err, 'Failed to file dispute')
@@ -809,7 +808,6 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
 
         const { marketId } = params
 
-        // Get user profile
         const profile = await getUserProfile()
         if (!profile) {
           throw new Error('User profile not found')
@@ -823,10 +821,11 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
         })
 
         const result = await signAndExecuteTransaction(tx)
+        const { digest, effects } = result
 
         return {
-          digest: result.digest,
-          effects: result.effects,
+          digest,
+          effects,
         }
       } catch (err) {
         handleError(err, 'Failed to acknowledge dispute win')
@@ -879,10 +878,11 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
         })
 
         const result = await signAndExecuteTransaction(tx)
+        const { digest, effects } = result
 
         return {
-          digest: result.digest,
-          effects: result.effects,
+          digest,
+          effects,
         }
       } catch (err) {
         handleError(err, 'Failed to approve arbiter')
@@ -924,10 +924,11 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
         })
 
         const result = await signAndExecuteTransaction(tx)
+        const { digest, effects } = result
 
         return {
-          digest: result.digest,
-          effects: result.effects,
+          digest,
+          effects,
         }
       } catch (err) {
         handleError(err, 'Failed to revoke arbiter')
@@ -970,10 +971,11 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
         })
 
         const result = await signAndExecuteTransaction(tx)
+        const { digest, effects } = result
 
         return {
-          digest: result.digest,
-          effects: result.effects,
+          digest,
+          effects,
         }
       } catch (err) {
         handleError(err, 'Failed to resolve dispute')
@@ -1014,10 +1016,11 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
         })
 
         const result = await signAndExecuteTransaction(tx)
+        const { digest, effects } = result
 
         return {
-          digest: result.digest,
-          effects: result.effects,
+          digest,
+          effects,
         }
       } catch (err) {
         handleError(err, 'Failed to finalize market')

@@ -1,12 +1,9 @@
 'use client'
 
 import { Toaster } from 'react-hot-toast'
-import AnimatedBackground from '../AnimatedBackground'
-
 const Extra = () => {
   return (
     <>
-      <AnimatedBackground />
       <Toaster
         toastOptions={{
           className:

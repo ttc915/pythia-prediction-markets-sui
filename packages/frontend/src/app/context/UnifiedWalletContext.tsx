@@ -66,6 +66,13 @@ export function UnifiedWalletProvider({ children }: { children: ReactNode }) {
     return null
   }, [zkLogin.account, walletAccount])
 
+  // Log successful zkLogin
+  React.useEffect(() => {
+    if (zkLogin.account) {
+      console.log('zkLogin success:', zkLogin.account.address)
+    }
+  }, [zkLogin.account])
+
   const accountType: AccountType = unifiedAccount?.type || null
 
   // Unified disconnect - handles both account types

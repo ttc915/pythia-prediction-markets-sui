@@ -2,13 +2,24 @@
 
 import { useState } from 'react'
 import { Button, DropdownMenu } from '@radix-ui/themes'
+import { Copy, Check } from 'lucide-react'
 import { useUnifiedWallet } from '~~/context/UnifiedWalletContext'
 import ConnectModal from './ConnectModal'
+import UnifiedBalance from './UnifiedBalance'
 
 const CustomConnectButton = () => {
   const { account, accountType, disconnect, loginWithGoogle, isLoading } =
     useUnifiedWallet()
   const [modalOpen, setModalOpen] = useState(false)
+  const [copied, setCopied] = useState(false)
+
+  const copyToClipboard = async () => {
+    if (account?.address) {
+      await navigator.clipboard.writeText(account.address)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    }
+  }
 
   if (account) {
     // Show connected account with dropdown menu
@@ -21,27 +32,69 @@ const CustomConnectButton = () => {
             </span>
           </Button>
         </DropdownMenu.Trigger>
-        <DropdownMenu.Content>
+
+        <DropdownMenu.Content style={{ minWidth: '360px' }}>
           {account.email && (
-            <DropdownMenu.Item disabled>
-              <div className="text-xs text-slate-600 dark:text-slate-400">
+            <DropdownMenu.Item disabled className="cursor-default opacity-100">
+              <span className="text-xs font-medium text-slate-500">Email</span>
+              <span className="text-sm text-slate-900 dark:text-slate-100">
                 {account.email}
-              </div>
+              </span>
             </DropdownMenu.Item>
           )}
-          <DropdownMenu.Item>
-            <div className="flex flex-col gap-1">
-              <div className="text-xs text-slate-600 dark:text-slate-400">
+
+          <DropdownMenu.Item
+            disabled
+            className="mt-4 cursor-default opacity-100"
+          >
+            <div className="flex w-full flex-col gap-1 py-1">
+              <span className="text-xs font-medium text-slate-500">
                 {accountType === 'zklogin'
                   ? 'zkLogin Address'
                   : 'Wallet Address'}
+              </span>
+              <div className="flex items-center justify-between gap-2 rounded-md bg-slate-100 p-2 dark:bg-slate-800">
+                <span className="font-mono text-xs text-slate-700 dark:text-slate-300">
+                  {account.address.slice(0, 10)}...{account.address.slice(-10)}
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    copyToClipboard()
+                  }}
+                  className="flex h-6 w-6 items-center justify-center rounded hover:bg-white hover:shadow-sm dark:hover:bg-slate-700"
+                  title="Copy address"
+                >
+                  {copied ? (
+                    <Check className="h-3 w-3 text-green-500" />
+                  ) : (
+                    <Copy className="h-3 w-3 text-slate-500" />
+                  )}
+                </button>
               </div>
-              <div className="font-mono text-xs">{account.address}</div>
             </div>
           </DropdownMenu.Item>
+
+          <DropdownMenu.Item
+            disabled
+            className="mt-9 cursor-default opacity-100"
+          >
+            <div className="flex w-full flex-col gap-1 py-1">
+              <span className="text-xs font-medium text-slate-500">
+                Balance
+              </span>
+              <UnifiedBalance />
+            </div>
+          </DropdownMenu.Item>
+
           <DropdownMenu.Separator />
-          <DropdownMenu.Item color="red" onClick={disconnect}>
-            Disconnect
+          <DropdownMenu.Item
+            color="red"
+            onClick={disconnect}
+            className="cursor-pointer"
+          >
+            <div className="w-full text-center font-medium">Disconnect</div>
           </DropdownMenu.Item>
         </DropdownMenu.Content>
       </DropdownMenu.Root>
