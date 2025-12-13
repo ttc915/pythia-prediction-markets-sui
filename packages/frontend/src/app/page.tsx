@@ -7,6 +7,7 @@ import MarketCard from './components/MarketCard'
 import CreateMarketModal from './components/CreateMarketModal'
 import PlaceBetModal from './components/PlaceBetModal'
 import NetworkSupportChecker from './components/NetworkSupportChecker'
+import AdminDashboard from './components/AdminDashboard'
 import { usePythia } from '~~/context/PythiaContext'
 import { Market } from '~~/types/pythia.types'
 import { useUnifiedWallet } from './context/UnifiedWalletContext'
@@ -80,6 +81,7 @@ export default function Home() {
       <div className="relative z-10">
         <NetworkSupportChecker />
         <div className="container mx-auto px-4 py-8">
+          <AdminDashboard />
           {/* Header */}
           <Flex justify="between" align="center" className="mb-8">
             <div>

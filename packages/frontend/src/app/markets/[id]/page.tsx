@@ -344,7 +344,11 @@ export default function MarketDetailsPage({
             className="rounded-lg bg-white p-6"
           >
             <QRCode
-              value={typeof window !== 'undefined' ? `${window.location.href}?referrer=${account?.address}` : ''}
+              value={
+                typeof window !== 'undefined'
+                  ? `${window.location.href}?referrer=${account?.address}`
+                  : ''
+              }
               size={256}
               style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
               viewBox={`0 0 256 256`}
@@ -369,9 +373,7 @@ export default function MarketDetailsPage({
                     })
                     .catch(console.error)
                 } else {
-                  // Fallback: copy to clipboard
                   navigator.clipboard.writeText(window.location.href)
-                  // Could show a toast here
                 }
               }}
             >
