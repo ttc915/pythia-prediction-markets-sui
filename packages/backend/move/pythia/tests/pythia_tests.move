@@ -326,6 +326,7 @@ fun test_admin_only_dispute_resolution() {
     {
         let mut market = test_scenario::take_shared<Market>(&scenario);
         let config = test_scenario::take_shared<ProtocolConfig>(&scenario);
+        let mut profile = test_scenario::take_from_sender<UserProfile>(&scenario);
         let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario));
         // Need a losing position (NO) for USER2.
         // We need to mint/place one first or just mint a dummy position if we weren't doing full integration.
@@ -339,6 +340,7 @@ fun test_admin_only_dispute_resolution() {
         pythia::file_dispute(
             &mut market,
             &config,
+            &mut profile,
             coin,
             &position,
             string::utf8(b"Wrong outcome"),
@@ -346,6 +348,7 @@ fun test_admin_only_dispute_resolution() {
             &clock,
             test_scenario::ctx(&mut scenario),
         );
+        test_scenario::return_to_sender(&scenario, profile);
         test_scenario::return_to_sender(&scenario, position);
 
         test_scenario::return_shared(market);
@@ -437,6 +440,7 @@ fun test_dispute_after_period() {
     {
         let mut market = test_scenario::take_shared<Market>(&scenario);
         let config = test_scenario::take_shared<ProtocolConfig>(&scenario);
+        let mut profile = test_scenario::take_from_sender<UserProfile>(&scenario);
         let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario));
 
         // Dispute period is 86400 * 1000 ms = 86,400,000 ms
@@ -452,6 +456,7 @@ fun test_dispute_after_period() {
         pythia::file_dispute(
             &mut market,
             &config,
+            &mut profile,
             coin,
             &position,
             string::utf8(b"Too late"),
@@ -459,6 +464,7 @@ fun test_dispute_after_period() {
             &clock,
             test_scenario::ctx(&mut scenario),
         );
+        test_scenario::return_to_sender(&scenario, profile);
         test_scenario::return_to_sender(&scenario, position);
 
         test_scenario::return_shared(market);
@@ -487,6 +493,7 @@ fun test_admin_uphold_dispute() {
     {
         let mut market = test_scenario::take_shared<Market>(&scenario);
         let config = test_scenario::take_shared<ProtocolConfig>(&scenario);
+        let mut profile = test_scenario::take_from_sender<UserProfile>(&scenario);
         let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario));
         clock::set_for_testing(&mut clock, 1600); // Inside dispute period
 
@@ -497,6 +504,7 @@ fun test_admin_uphold_dispute() {
         pythia::file_dispute(
             &mut market,
             &config,
+            &mut profile,
             coin,
             &position,
             string::utf8(b"Actually NO won"),
@@ -504,6 +512,7 @@ fun test_admin_uphold_dispute() {
             &clock,
             test_scenario::ctx(&mut scenario),
         );
+        test_scenario::return_to_sender(&scenario, profile);
         test_scenario::return_to_sender(&scenario, position);
 
         test_scenario::return_shared(market);
@@ -772,6 +781,7 @@ fun test_admin_reject_dispute() {
     {
         let mut market = test_scenario::take_shared<Market>(&scenario);
         let config = test_scenario::take_shared<ProtocolConfig>(&scenario);
+        let mut profile = test_scenario::take_from_sender<UserProfile>(&scenario);
         let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario));
         clock::set_for_testing(&mut clock, 1600);
         let position = test_scenario::take_from_sender<pythia::Position>(&scenario);
@@ -781,6 +791,7 @@ fun test_admin_reject_dispute() {
         pythia::file_dispute(
             &mut market,
             &config,
+            &mut profile,
             coin,
             &position,
             string::utf8(b"I disagree"),
@@ -788,6 +799,7 @@ fun test_admin_reject_dispute() {
             &clock,
             test_scenario::ctx(&mut scenario),
         );
+        test_scenario::return_to_sender(&scenario, profile);
         test_scenario::return_to_sender(&scenario, position);
 
         test_scenario::return_shared(market);
@@ -1609,6 +1621,7 @@ fun test_dispute_resolution_pay() {
     {
         let mut market = test_scenario::take_shared<Market>(&scenario);
         let config = test_scenario::take_shared<ProtocolConfig>(&scenario);
+        let mut profile = test_scenario::take_from_sender<UserProfile>(&scenario);
         let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario));
         clock::set_for_testing(&mut clock, 1600);
 
@@ -1618,6 +1631,7 @@ fun test_dispute_resolution_pay() {
         pythia::file_dispute(
             &mut market,
             &config,
+            &mut profile,
             coin,
             &position,
             string::utf8(b"Actually NO"),
@@ -1626,6 +1640,7 @@ fun test_dispute_resolution_pay() {
             test_scenario::ctx(&mut scenario),
         );
 
+        test_scenario::return_to_sender(&scenario, profile);
         test_scenario::return_to_sender(&scenario, position);
         test_scenario::return_shared(market);
         test_scenario::return_shared(config);

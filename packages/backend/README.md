@@ -54,11 +54,11 @@ The test suite (`pythia_tests.move`) covers the following scenarios:
 const CURRENT_VERSION: u64 = 1;
 
 /// One-Time Witness
-public struct PREDICTION_MARKET has drop {}
+public struct PYTHIA has drop {}
 
 public struct UserProfile has key {
     id: UID,
-    version: u64,               // For upgrades
+    version: u64,
     address: address,
     total_bets: u64,
     total_wins: u64,
@@ -70,10 +70,9 @@ public struct UserProfile has key {
     disputes_filed: u64,
     disputes_won: u64,
     last_active_timestamp: u64,
-    is_banned: bool,
 }
 
-public struct ArbiterProfile has store {
+public struct ArbiterProfile has drop, store {
     version: u64,
     address: address,
     total_resolutions: u64,
@@ -83,14 +82,43 @@ public struct ArbiterProfile has store {
     total_earnings: u64,
 }
 
+public struct ProtocolConfig has key {
+    id: UID,
+    version: u64,
+    protocol_fee_bps: u64,
+    creator_fee_bps: u64,
+    arbiter_fee_bps: u64,
+    min_bet_amount: u64,
+    dispute_bond: u64,
+    dispute_period: u64,
+    dispute_threshold: u64,
+    max_disputes_per_user: u64,
+    treasury: address,
+    admin: address,
+    arbiters: VecMap<address, ArbiterProfile>,
+}
+
+public struct Dispute has store {
+    market_id: ID,
+    supporters: VecSet<address>,
+    total_bond: Balance<SUI>,
+    reason: String,
+    proposed_outcome: bool,
+    created_at: u64,
+    resolved: bool,
+    upheld: bool,
+}
+
 public struct Market has key {
     id: UID,
     version: u64,
     description: String,
     betting_end_time: u64,
     resolution_deadline: u64,
-    total_yes_amount: Balance<SUI>,
-    total_no_amount: Balance<SUI>,
+    total_yes_amount: u64,
+    total_no_amount: u64,
+    pot_yes: Balance<SUI>,
+    pot_no: Balance<SUI>,
     outcome: Option<bool>,
     creator: address,
     creator_fee_bps: u64,
@@ -101,6 +129,17 @@ public struct Market has key {
     dispute_end_time: u64,
     disputed: bool,
     finalized: bool,
+    dispute: Option<Dispute>,
+}
+
+public struct Position has key {
+    id: UID,
+    version: u64,
+    market_id: ID,
+    owner: address,
+    is_yes: bool,
+    amount: u64,
+    claimed: bool,
 }
 ```
 
@@ -136,6 +175,20 @@ public struct EventMarketResolved has copy, drop {
     total_pool: u64,
     timestamp: u64,
 }
+
+public struct EventWinningsClaimed has copy, drop {
+    market_id: ID,
+    user: address,
+    amount: u64,
+    timestamp: u64,
+}
+
+public struct EventDisputeFiled has copy, drop {
+    market_id: ID,
+    dispute_id: ID,
+    challenger: address,
+    timestamp: u64,
+}
 ```
 
 </details>
@@ -144,12 +197,18 @@ public struct EventMarketResolved has copy, drop {
 
 ### Core Functions
 
-| Function          | Description                                                                                                   |
-| :---------------- | :------------------------------------------------------------------------------------------------------------ |
-| `place_bet`       | Places a bet on a market. automatically creates a `UserProfile` if one does not exist.                        |
-| `claim`           | Unified claim function. Claims winnings, acknowledges losses, or collects creator fees, while updating stats. |
-| `get_win_rate`    | Calculates win rate: `(total_wins * 100) / total_bets`.                                                       |
-| `get_profit_loss` | Calculates PnL: `total_amount_won - total_amount_lost`.                                                       |
+| Function                  | Description                                                                                   |
+| :------------------------ | :-------------------------------------------------------------------------------------------- |
+| `create_profile`          | Creates a new `UserProfile` for the caller.                                                   |
+| `create_market`           | Creates a new prediction market with specified parameters and arbiters.                       |
+| `place_bet`               | Places a bet on a market, automatically creates a `UserProfile` if one does not exist.        |
+| `submit_resolution`       | Arbiter submits their resolution vote for a market.                                           |
+| `file_dispute`            | Files a dispute on a resolved market by a losing bettor, requiring a bond and position proof. |
+| `resolve_dispute`         | Admin resolves a dispute, either upholding or rejecting it.                                   |
+| `finalize_market`         | Finalizes a market after dispute period, settling fees and preparing for claims.              |
+| `claim`                   | Unified claim function for winners and losers, updating profiles accordingly.                 |
+| `acknowledge_dispute_win` | User acknowledges a won dispute to update their profile stats.                                |
+| `approve_arbiter`         | Admin approves an arbiter for resolution duties.                                              |
 
 ### Optimizations
 
@@ -161,12 +220,13 @@ public struct EventMarketResolved has copy, drop {
 
 ### State Updates
 
-| Action           | Profile Updates Triggered                       |
-| :--------------- | :---------------------------------------------- |
-| `place_bet`      | `total_bets++`, `total_amount_bet += amount`    |
-| `claim_winnings` | `total_wins++`, `total_amount_won += payout`    |
-| `claim_loss`     | `total_losses++`, `total_amount_lost += amount` |
-| `dispute upheld` | `disputes_won++`                                |
+| Action                    | Profile Updates Triggered                    |
+| :------------------------ | :------------------------------------------- |
+| `place_bet`               | `total_bets++`, `total_amount_bet += amount` |
+| `claim` (win)             | `total_wins++`, `total_amount_won += payout` |
+| `claim` (loss)            | `total_amount_lost += amount`                |
+| `file_dispute`            | `disputes_filed++`                           |
+| `acknowledge_dispute_win` | `disputes_won++`                             |
 
 ## Usage Flows
 
@@ -186,14 +246,22 @@ public struct EventMarketResolved has copy, drop {
 ### 3. Arbiter
 
 - **Approve**: Arbiters must first be approved by the protocol admin.
+  - _Function_: `pythia::approve_arbiter`
 - **Vote**: After the betting window closes, arbiters submit their resolution (YES/NO).
   - _Function_: `pythia::submit_resolution`
 - **Consensus**: Once the `arbiter_threshold` is met, the market is resolved.
 
 ### 4. Disputer (Losing Bettor)
 
-- **File Dispute**: If the arbiters decide incorrectly, a user with a losing position can file a dispute within the dispute window by posting a bond.
+- **File Dispute**: If the arbiters decide incorrectly, a user with a losing position can file a dispute within the dispute window by posting a bond and providing their position as proof.
   - _Function_: `pythia::file_dispute`
+
+### 5. Admin
+
+- **Resolve Dispute**: Review and resolve disputes by upholding or rejecting them.
+  - _Function_: `pythia::resolve_dispute`
+- **Finalize Market**: After the dispute period, finalize the market to settle fees.
+  - _Function_: `pythia::finalize_market`
 
 ## Visual Workflows
 

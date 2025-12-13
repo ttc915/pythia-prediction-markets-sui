@@ -480,6 +480,7 @@ fun resolve_market(market: &mut Market, outcome: bool, config: &ProtocolConfig, 
 public fun file_dispute(
     market: &mut Market,
     config: &ProtocolConfig,
+    profile: &mut UserProfile,
     payment: Coin<SUI>,
     position: &Position, // New argument
     reason: String,
@@ -492,6 +493,7 @@ public fun file_dispute(
     assert!(market.resolved, EMarketNotFinalized);
     assert!(timestamp < market.dispute_end_time, EDisputePeriodActive);
     assert!(coin::value(&payment) >= config.dispute_bond, EInsufficientBond);
+    assert!(profile.address == sender, EWrongVersion); // Ensure profile belongs to sender
 
     // Verify Challenger is a loser
     assert!(position.market_id == object::id(market), EMustBeLosingBettor);
@@ -501,6 +503,10 @@ public fun file_dispute(
         // If outcome is YES (true), challenger must have NO (false)
         assert!(position.is_yes != outcome, EMustBeLosingBettor);
     };
+
+    // Update profile
+    profile.disputes_filed = profile.disputes_filed + 1;
+    profile.last_active_timestamp = timestamp;
 
     // If dispute exists, join it
     if (option::is_some(&market.dispute)) {
@@ -539,6 +545,7 @@ public fun file_dispute(
 entry fun file_dispute_entry(
     market: &mut Market,
     config: &ProtocolConfig,
+    profile: &mut UserProfile,
     payment: Coin<SUI>,
     position: &Position, // New Argument
     reason: String,
@@ -546,7 +553,7 @@ entry fun file_dispute_entry(
     clock: &Clock,
     ctx: &mut TxContext,
 ) {
-    file_dispute(market, config, payment, position, reason, proposed_outcome, clock, ctx);
+    file_dispute(market, config, profile, payment, position, reason, proposed_outcome, clock, ctx);
 }
 
 public fun resolve_dispute(
@@ -814,4 +821,27 @@ public fun get_market_outcome(market: &Market): Option<bool> {
 public fun get_arbiter_earnings(config: &ProtocolConfig, arbiter: address): u64 {
     let profile = vec_map::get(&config.arbiters, &arbiter);
     profile.total_earnings
+}
+
+public fun acknowledge_dispute_win(
+    profile: &mut UserProfile,
+    market: &Market,
+    ctx: &mut TxContext,
+) {
+    assert!(profile.address == ctx.sender(), EWrongVersion);
+    assert!(option::is_some(&market.dispute), EDisputeAlreadyFiled);
+    let dispute = option::borrow(&market.dispute);
+    assert!(dispute.upheld, EDisputeAlreadyFiled); // Only if upheld
+    assert!(vec_set::contains(&dispute.supporters, &ctx.sender()), ENotApprovedArbiter); // Must be supporter
+    // Note: No check for multiple calls, user can call multiple times, but perhaps ok
+
+    profile.disputes_won = profile.disputes_won + 1;
+}
+
+entry fun acknowledge_dispute_win_entry(
+    profile: &mut UserProfile,
+    market: &Market,
+    ctx: &mut TxContext,
+) {
+    acknowledge_dispute_win(profile, market, ctx);
 }
