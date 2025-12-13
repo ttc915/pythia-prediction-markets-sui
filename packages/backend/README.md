@@ -35,7 +35,7 @@ pnpm run test
 pnpm run testnet:deploy
 
 # CLI deploy
-sui client publish --gas-budget 1000000000 ./move/pythia
+sui client publish --gas-budget 100000000 ./move/pythia
 ```
 
 #### Test Coverage
