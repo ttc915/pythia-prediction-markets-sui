@@ -12,7 +12,7 @@ const { homedir } = require("node:os");
 const path = require("node:path");
 const EnvFileWriter = require("env-file-rw").default;
 
-const DEPLOYED_MODULE_NAME = "greeting";
+const DEPLOYED_MODULE_NAME = "pythia";
 
 const main = async () => {
   const network = getNetworkFromArgs();
@@ -25,7 +25,7 @@ const main = async () => {
   await createFileIfNecessary(targetFile);
 
   // Check whether the frontend is Next.js-powered to decide what environment variable name format to use.
-  const isNextJs = await isNextJsProject();
+  const isNextJs = isNextJsProject();
 
   // Add Move package ID to .env.local or update it if it already exists.
   await setEnvVar(

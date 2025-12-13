@@ -1,20 +1,34 @@
 'use client'
 
+import { useEffect } from 'react'
 import { Dialog, Button, Flex, Text } from '@radix-ui/themes'
 import { Wallet, Chrome } from 'lucide-react'
 import { ConnectButton } from '@mysten/dapp-kit'
+import { useUnifiedWallet } from '~~/context/UnifiedWalletContext'
 
 interface ConnectModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   onZKLoginClick: () => void
+  onConnected?: () => void // Optional callback after successful connection
 }
 
 const ConnectModal = ({
   open,
   onOpenChange,
   onZKLoginClick,
+  onConnected,
 }: ConnectModalProps) => {
+  const { account } = useUnifiedWallet()
+
+  // Detect when wallet connects and call onConnected callback
+  useEffect(() => {
+    if (account && open && onConnected) {
+      onConnected()
+      onOpenChange(false) // Close modal after successful connection
+    }
+  }, [account, open, onConnected, onOpenChange])
+
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Content maxWidth="450px">

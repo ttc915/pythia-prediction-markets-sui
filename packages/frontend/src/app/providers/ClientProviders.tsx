@@ -9,6 +9,7 @@ import { ReactNode } from 'react'
 import { ZKLoginProvider } from '~~/context/zkLoginContext'
 import { UnifiedWalletProvider } from '~~/context/UnifiedWalletContext'
 import { PythiaProvider } from '~~/context/PythiaContext'
+import { AutoProfileCreator } from '~~/components/AutoProfileCreator'
 import useNetworkConfig from '~~/hooks/useNetworkConfig'
 import { APP_NAME } from '../config/main'
 import { getThemeSettings } from '../helpers/theme'
@@ -32,7 +33,10 @@ export default function ClientProviders({ children }: { children: ReactNode }) {
         >
           <ZKLoginProvider>
             <UnifiedWalletProvider>
-              <PythiaProvider>{children}</PythiaProvider>
+              <PythiaProvider>
+                <AutoProfileCreator />
+                {children}
+              </PythiaProvider>
             </UnifiedWalletProvider>
           </ZKLoginProvider>
         </SuiProvider>

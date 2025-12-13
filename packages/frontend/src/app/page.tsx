@@ -5,6 +5,7 @@ import { Button, Flex, Text } from '@radix-ui/themes'
 import { Plus } from 'lucide-react'
 import MarketCard from './components/MarketCard'
 import CreateMarketModal from './components/CreateMarketModal'
+import PlaceBetModal from './components/PlaceBetModal'
 import NetworkSupportChecker from './components/NetworkSupportChecker'
 
 // Mock data for MVP
@@ -68,14 +69,47 @@ const mockMarkets = [
 export default function Home() {
   const [createModalOpen, setCreateModalOpen] = useState(false)
 
+  // State for bet modal
+  const [betModalOpen, setBetModalOpen] = useState(false)
+  const [selectedMarket, setSelectedMarket] = useState<any>(null)
+
   const handleBetYes = (marketId: string) => {
-    console.log('Bet YES on market:', marketId)
-    // TODO: Implement bet modal
+    const market = mockMarkets.find((m) => m.id === marketId)
+    if (market) {
+      setSelectedMarket(market)
+      setBetModalOpen(true)
+    }
   }
 
   const handleBetNo = (marketId: string) => {
-    console.log('Bet NO on market:', marketId)
-    // TODO: Implement bet modal
+    const market = mockMarkets.find((m) => m.id === marketId)
+    if (market) {
+      setSelectedMarket(market)
+      setBetModalOpen(true)
+    }
+  }
+
+  const convertMockToRealMarket = (mock: any) => {
+    if (!mock) return null
+    return {
+      id: mock.id,
+      description: mock.description,
+      total_yes_amount: mock.totalYesAmount.toString(),
+      total_no_amount: mock.totalNoAmount.toString(),
+      betting_end_time: mock.bettingEndTime.toString(),
+      resolved: mock.resolved,
+      outcome: mock.outcome,
+      // Default values for fields missing in mock
+      version: '1',
+      resolution_deadline: (Date.now() + 1000000).toString(),
+      creator: '0x0',
+      creator_fee_bps: '100',
+      arbiters: [],
+      arbiter_threshold: '1',
+      dispute_end_time: '0',
+      disputed: false,
+      finalized: false
+    }
   }
 
   return (
@@ -154,6 +188,15 @@ export default function Home() {
         open={createModalOpen}
         onOpenChange={setCreateModalOpen}
       />
+
+      {/* Place Bet Modal */}
+      {selectedMarket && (
+        <PlaceBetModal
+          open={betModalOpen}
+          onOpenChange={setBetModalOpen}
+          market={convertMockToRealMarket(selectedMarket)!}
+        />
+      )}
     </>
   )
 }
