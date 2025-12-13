@@ -4,7 +4,8 @@ import React, { createContext, useContext, ReactNode, useMemo } from 'react'
 import {
   useCurrentAccount,
   useDisconnectWallet,
-  useSignAndExecuteTransaction,
+  useSignTransaction,
+  useSuiClient,
 } from '@mysten/dapp-kit'
 import { useZKLogin } from '~~/hooks/useZKLogin'
 import { Transaction } from '@mysten/sui/transactions'
@@ -47,6 +48,7 @@ export function UnifiedWalletProvider({ children }: { children: ReactNode }) {
   const zkLogin = useZKLogin()
   const walletAccount = useCurrentAccount()
   const { mutate: disconnectWallet } = useDisconnectWallet()
+  const suiClient = useSuiClient()
 
   // Determine which account is active (zkLogin takes precedence if both exist)
   const unifiedAccount: UnifiedAccount | null = useMemo(() => {
@@ -85,8 +87,7 @@ export function UnifiedWalletProvider({ children }: { children: ReactNode }) {
   }
 
   // Get wallet transaction signer
-  const { mutateAsync: walletSignAndExecuteTransaction } =
-    useSignAndExecuteTransaction()
+  const { mutateAsync: signTransaction } = useSignTransaction()
 
   // Unified transaction signing
   const signAndExecuteTransaction = async (tx: Transaction) => {
@@ -96,8 +97,18 @@ export function UnifiedWalletProvider({ children }: { children: ReactNode }) {
 
     // For wallet transactions
     if (accountType === 'wallet') {
-      return await walletSignAndExecuteTransaction({
+      const { bytes, signature } = await signTransaction({
         transaction: tx,
+      })
+
+      return await suiClient.executeTransactionBlock({
+        transactionBlock: bytes,
+        signature,
+        options: {
+          showEffects: true,
+          showObjectChanges: true,
+          showEvents: true,
+        },
       })
     }
 

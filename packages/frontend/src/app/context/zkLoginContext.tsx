@@ -225,6 +225,10 @@ export function ZKLoginProvider({ children }: ZKLoginProviderProps) {
         const result = await suiClient.executeTransactionBlock({
           transactionBlock: bytes,
           signature: zkLoginSignature,
+          options: {
+            showEffects: true,
+            showObjectChanges: true,
+          },
         })
 
         return result
