@@ -15,77 +15,65 @@ export function useAutoCreateProfile() {
 
     const [isCreating, setIsCreating] = useState(false)
     const [error, setError] = useState<Error | null>(null)
-    const [profileCreated, setProfileCreated] = useState(false)
+    const [needsProfile, setNeedsProfile] = useState(false)
+    const [isChecking, setIsChecking] = useState(false)
 
-    // Track which addresses we've already processed to avoid duplicate attempts
-    const processedAddresses = useRef<Set<string>>(new Set())
-
+    // Check if profile exists when account changes
     useEffect(() => {
-        const autoCreateProfile = async () => {
-            // Skip if no account connected
-            if (!account) {
-                return
-            }
-
-            // Skip if contract not configured
-            if (!isConfigured) {
-                return
-            }
-
-            // Skip if we've already processed this address
-            if (processedAddresses.current.has(account.address)) {
-                return
-            }
-
-            // Skip if already creating
-            if (isCreating) {
+        const checkProfile = async () => {
+            if (!account || !isConfigured) {
+                setNeedsProfile(false)
                 return
             }
 
             try {
-                setIsCreating(true)
-                setError(null)
-
-                // Check if profile already exists
-                const profileExists = await checkUserProfileExists(account.address)
-
-                if (!profileExists) {
-                    console.log(
-                        `Creating user profile for address: ${account.address.slice(0, 8)}...`
-                    )
-
-                    // Create the profile
-                    await createUserProfile()
-
-                    console.log('User profile created successfully!')
-                    setProfileCreated(true)
-
-                    // Give the blockchain a moment to index the new profile
-                    await new Promise((resolve) => setTimeout(resolve, 1500))
-                } else {
-                    console.log(
-                        `User profile already exists for: ${account.address.slice(0, 8)}...`
-                    )
-                }
-
-                // Mark this address as processed
-                processedAddresses.current.add(account.address)
+                setIsChecking(true)
+                const exists = await checkUserProfileExists(account.address)
+                setNeedsProfile(!exists)
             } catch (err) {
-                console.error('Failed to auto-create user profile:', err)
-                setError(
-                    err instanceof Error ? err : new Error('Failed to create profile')
-                )
+                console.error('Error checking profile existence:', err)
             } finally {
-                setIsCreating(false)
+                setIsChecking(false)
             }
         }
 
-        autoCreateProfile()
-    }, [account, isConfigured, checkUserProfileExists, createUserProfile])
+        checkProfile()
+    }, [account, isConfigured, checkUserProfileExists])
+
+    const handleCreateProfile = async () => {
+        if (!account || !isConfigured) return
+
+        try {
+            setIsCreating(true)
+            setError(null)
+
+            console.log(
+                `Creating user profile for address: ${account.address.slice(0, 8)}...`
+            )
+
+            await createUserProfile()
+
+            console.log('User profile created successfully!')
+            setNeedsProfile(false)
+
+            // Give the blockchain a moment to index the new profile
+            await new Promise((resolve) => setTimeout(resolve, 1500))
+        } catch (err) {
+            console.error('Failed to create user profile:', err)
+            setError(
+                err instanceof Error ? err : new Error('Failed to create profile')
+            )
+        } finally {
+            setIsCreating(false)
+        }
+    }
 
     return {
         isCreating,
+        isChecking,
         error,
-        profileCreated,
+        needsProfile,
+        createProfile: handleCreateProfile,
+        dismissProfileCreation: () => setNeedsProfile(false),
     }
 }

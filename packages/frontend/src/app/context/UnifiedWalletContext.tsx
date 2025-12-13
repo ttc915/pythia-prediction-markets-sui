@@ -1,7 +1,7 @@
 'use client'
 
 import React, { createContext, useContext, ReactNode, useMemo } from 'react'
-import { useCurrentAccount, useDisconnectWallet } from '@mysten/dapp-kit'
+import { useCurrentAccount, useDisconnectWallet, useSignAndExecuteTransaction } from '@mysten/dapp-kit'
 import { useZKLogin } from '~~/hooks/useZKLogin'
 import { Transaction } from '@mysten/sui/transactions'
 
@@ -73,14 +73,23 @@ export function UnifiedWalletProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  // Get wallet transaction signer
+  const { mutateAsync: walletSignAndExecuteTransaction } = useSignAndExecuteTransaction()
+
   // Unified transaction signing
   const signAndExecuteTransaction = async (tx: Transaction) => {
     if (accountType === 'zklogin') {
       return await zkLogin.signAndExecuteTransaction(tx)
     }
-    // For wallet transactions, we'll use the standard dapp-kit hooks
-    // This will be handled in the component level with useSuiClientMutation
-    throw new Error('Wallet transactions should use useSuiClientMutation')
+
+    // For wallet transactions
+    if (accountType === 'wallet') {
+      return await walletSignAndExecuteTransaction({
+        transaction: tx,
+      })
+    }
+
+    throw new Error('No active account connected')
   }
 
   const getAddress = () => {

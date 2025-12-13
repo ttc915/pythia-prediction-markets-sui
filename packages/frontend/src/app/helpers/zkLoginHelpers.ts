@@ -135,7 +135,8 @@ export async function fetchZKProof(
   jwt: string,
   extendedEphemeralPublicKey: string,
   randomness: string,
-  maxEpoch: number
+  maxEpoch: number,
+  network: string = 'testnet'
 ): Promise<any> {
   try {
     // Use local API proxy to avoid CORS issues
@@ -151,6 +152,7 @@ export async function fetchZKProof(
         jwtRandomness: randomness,
         salt: randomness,
         keyClaimName: 'sub',
+        network,
       }),
     })
 

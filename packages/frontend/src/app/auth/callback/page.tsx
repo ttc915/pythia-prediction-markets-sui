@@ -84,7 +84,8 @@ export default function AuthCallback() {
           jwt,
           session.extendedEphemeralPublicKey,
           session.randomness,
-          session.maxEpoch
+          session.maxEpoch,
+          session.network || 'testnet'
         )
 
         // Create account object

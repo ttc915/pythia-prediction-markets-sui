@@ -71,6 +71,7 @@ interface PythiaContextValue {
   finalizeMarket: (params: FinalizeMarketParams) => Promise<TransactionResult>
 
   // Queries
+  getMarkets: () => Promise<Market[]>
   getMarket: (marketId: string) => Promise<Market | null>
   getUserProfile: (address?: string) => Promise<UserProfile | null>
   getUserPositions: (address?: string) => Promise<Position[]>
@@ -146,6 +147,73 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
   // ============================================================================
   // Query Functions
   // ============================================================================
+
+  // Result of getMarkets is hard to type precisely without more custom types,
+  // but we can just use the Market[] return type
+  const getMarkets = useCallback(async (): Promise<Market[]> => {
+    try {
+      ensureConfigured()
+
+      // 1. Query events to find all created markets
+      const events = await suiClient.queryEvents({
+        query: {
+          MoveEventType: `${contractPackageId}::${MODULE_NAME}::MarketCreatedEvent`,
+        },
+        order: 'Descending',
+      })
+
+      if (!events.data || events.data.length === 0) {
+        return []
+      }
+
+      // 2. Extract market IDs from events
+      const marketIds = events.data
+        .map((event) => (event.parsedJson as any)?.market_id)
+        .filter((id) => !!id)
+
+      if (marketIds.length === 0) {
+        return []
+      }
+
+      // 3. Batch fetch market objects
+      const objects = await suiClient.multiGetObjects({
+        ids: marketIds,
+        options: { showContent: true },
+      })
+
+      // 4. Parse and format market data
+      const markets: Market[] = []
+
+      for (const obj of objects) {
+        if (obj.data?.content && (obj.data.content as any).dataType === 'moveObject') {
+          const fields = (obj.data.content as any).fields
+          markets.push({
+            id: fields.id.id,
+            version: fields.version,
+            description: fields.description,
+            betting_end_time: fields.betting_end_time,
+            resolution_deadline: fields.resolution_deadline,
+            total_yes_amount: fields.total_yes_amount,
+            total_no_amount: fields.total_no_amount,
+            outcome: fields.outcome ? fields.outcome : null,
+            creator: fields.creator,
+            creator_fee_bps: fields.creator_fee_bps,
+            arbiters: fields.arbiters,
+            arbiter_threshold: fields.arbiter_threshold,
+            resolved: fields.resolved,
+            dispute_end_time: fields.dispute_end_time,
+            disputed: fields.disputed,
+            finalized: fields.finalized,
+          })
+        }
+      }
+
+      return markets
+    } catch (err) {
+      console.error('Error fetching markets:', err)
+      return []
+    }
+  }, [suiClient, contractPackageId, ensureConfigured])
 
   const getMarket = useCallback(
     async (marketId: string): Promise<Market | null> => {
@@ -1008,6 +1076,7 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
     finalizeMarket,
 
     // Queries
+    getMarkets,
     getMarket,
     getUserProfile,
     getUserPositions,

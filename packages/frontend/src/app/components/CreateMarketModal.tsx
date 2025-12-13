@@ -13,13 +13,13 @@ interface CreateMarketModalProps {
 }
 
 const CreateMarketModal = ({ open, onOpenChange }: CreateMarketModalProps) => {
-  const { createMarket, isLoading, error } = usePythia()
+  const { createMarket, getProtocolConfig, isLoading, error } = usePythia()
   const { account, loginWithGoogle } = useUnifiedWallet()
 
   const [description, setDescription] = useState('')
   const [bettingEndDate, setBettingEndDate] = useState('')
   const [resolutionDate, setResolutionDate] = useState('')
-  const [arbiters, setArbiters] = useState('')
+
   const [threshold, setThreshold] = useState('1')
   const [success, setSuccess] = useState(false)
   const [marketId, setMarketId] = useState<string | null>(null)
@@ -35,7 +35,7 @@ const CreateMarketModal = ({ open, onOpenChange }: CreateMarketModalProps) => {
     setDescription('')
     setBettingEndDate('')
     setResolutionDate('')
-    setArbiters('')
+
     setThreshold('1')
     setSuccess(false)
     setMarketId(null)
@@ -45,20 +45,26 @@ const CreateMarketModal = ({ open, onOpenChange }: CreateMarketModalProps) => {
     e.preventDefault()
 
     try {
-      // Parse arbiters (comma-separated addresses)
-      const arbiterList = arbiters
-        .split(',')
-        .map((addr) => addr.trim())
-        .filter((addr) => addr.length > 0)
-
-      if (arbiterList.length === 0) {
-        alert('Please add at least one arbiter address')
-        return
-      }
-
       // Convert dates to timestamps
       const bettingEndTime = new Date(bettingEndDate).getTime()
       const resolutionDeadline = new Date(resolutionDate).getTime()
+
+      // Fetch approved arbiters from protocol config
+      const protocolConfig = await getProtocolConfig()
+      if (!protocolConfig || !protocolConfig.arbiters) {
+        throw new Error('Failed to fetch protocol configuration')
+      }
+
+      const arbiterList = []
+      for (const arbiter of (protocolConfig.arbiters.fields as any).contents) {
+          arbiterList.push(arbiter.fields.key)
+      }
+
+      if (arbiterList.length === 0) {
+        throw new Error('No approved arbiters found in protocol config')
+      }
+
+      console.log({ arbiterList })
 
       const result = await createMarket({
         description,
@@ -218,27 +224,7 @@ const CreateMarketModal = ({ open, onOpenChange }: CreateMarketModalProps) => {
                   </Text>
                 </div>
 
-                {/* Arbiters */}
-                <div>
-                  <label
-                    htmlFor="arbiters"
-                    className="mb-2 block text-sm font-medium text-slate-700 dark:text-slate-300"
-                  >
-                    Arbiters <span className="text-red-500">*</span>
-                  </label>
-                  <TextArea
-                    id="arbiters"
-                    placeholder="0x1234..., 0x5678..."
-                    value={arbiters}
-                    onChange={(e) => setArbiters(e.target.value)}
-                    required
-                    className="w-full font-mono text-sm"
-                    rows={2}
-                  />
-                  <Text size="1" className="mt-1 text-slate-500">
-                    Comma-separated addresses of approved arbiters
-                  </Text>
-                </div>
+
 
                 {/* Arbiter Threshold */}
                 <div>
