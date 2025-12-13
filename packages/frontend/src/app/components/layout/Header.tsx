@@ -5,7 +5,6 @@ import { APP_NAME } from '../../config/main'
 import Image from 'next/image'
 import Logo from '../../assets/logo.svg'
 import CustomConnectButton from '../CustomConnectButton'
-import UnifiedBalance from '../UnifiedBalance'
 import NetworkSelector from '../NetworkSelector'
 
 const Header = () => {
@@ -25,12 +24,8 @@ const Header = () => {
         <div className="pt-1 text-xl sm:text-2xl">{APP_NAME}</div>
       </Link>
 
-      <div className="flex w-full flex-col items-center justify-center gap-3 sm:w-auto sm:flex-row">
-        <div className="flex flex-row items-center justify-center gap-3">
-          <UnifiedBalance />
-          <NetworkSelector />
-        </div>
-
+      <div className="flex flex-row items-center justify-center gap-3">
+        <NetworkSelector />
         <div className="sds-connect-button-container">
           <CustomConnectButton />
         </div>

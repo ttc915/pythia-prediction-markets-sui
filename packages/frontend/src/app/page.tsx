@@ -87,17 +87,24 @@ export default function Home() {
         <Flex direction="column" gap="6" className="mb-8">
           <Flex justify="between" align="center" wrap="wrap" gap="4">
             <div>
-              <Text size="8" weight="bold" className="text-slate-900 dark:text-white">
+              <Text
+                size="8"
+                weight="bold"
+                className="text-slate-900 dark:text-white"
+              >
                 Prediction Markets
               </Text>
-              <Text size="3" className="text-slate-600 dark:text-slate-400 mt-1">
+              <Text
+                size="3"
+                className="mt-1 text-slate-600 dark:text-slate-400"
+              >
                 Bet on the future with Pythia
               </Text>
             </div>
 
             <Button
               size="3"
-              className="bg-blue-500 hover:bg-blue-600 text-white"
+              className="bg-blue-500 text-white hover:bg-blue-600"
               onClick={() => setCreateModalOpen(true)}
             >
               <Plus className="h-5 w-5" />
@@ -143,7 +150,10 @@ export default function Home() {
       </main>
 
       {/* Create Market Modal */}
-      <CreateMarketModal open={createModalOpen} onOpenChange={setCreateModalOpen} />
+      <CreateMarketModal
+        open={createModalOpen}
+        onOpenChange={setCreateModalOpen}
+      />
     </>
   )
 }

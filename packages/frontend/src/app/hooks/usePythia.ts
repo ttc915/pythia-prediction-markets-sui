@@ -2,7 +2,7 @@
 export { usePythia } from '~~/context/PythiaContext'
 export { usePythiaMarket, usePythiaMarkets } from './usePythiaMarket'
 export {
-    usePythiaProfile,
-    usePythiaPositions,
-    useHasPythiaProfile,
+  usePythiaProfile,
+  usePythiaPositions,
+  useHasPythiaProfile,
 } from './usePythiaProfile'
