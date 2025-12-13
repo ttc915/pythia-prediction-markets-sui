@@ -1,7 +1,11 @@
 'use client'
 
 import React, { createContext, useContext, ReactNode, useMemo } from 'react'
-import { useCurrentAccount, useDisconnectWallet, useSignAndExecuteTransaction } from '@mysten/dapp-kit'
+import {
+  useCurrentAccount,
+  useDisconnectWallet,
+  useSignAndExecuteTransaction,
+} from '@mysten/dapp-kit'
 import { useZKLogin } from '~~/hooks/useZKLogin'
 import { Transaction } from '@mysten/sui/transactions'
 
@@ -74,7 +78,8 @@ export function UnifiedWalletProvider({ children }: { children: ReactNode }) {
   }
 
   // Get wallet transaction signer
-  const { mutateAsync: walletSignAndExecuteTransaction } = useSignAndExecuteTransaction()
+  const { mutateAsync: walletSignAndExecuteTransaction } =
+    useSignAndExecuteTransaction()
 
   // Unified transaction signing
   const signAndExecuteTransaction = async (tx: Transaction) => {

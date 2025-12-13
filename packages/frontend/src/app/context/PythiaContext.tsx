@@ -154,21 +154,21 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
     try {
       ensureConfigured()
 
-      // 1. Query events to find all created markets (with pagination)
       const marketIds = new Set<string>()
       let hasNextPage = true
-      let cursor: any = null
+      let cursor = null
 
       while (hasNextPage) {
         const events = await suiClient.queryEvents({
           query: {
-            MoveEventType: `${contractPackageId}::${MODULE_NAME}::MarketCreatedEvent`,
+            MoveModule: {
+              module: MODULE_NAME,
+              package: contractPackageId,
+            },
           },
           order: 'descending',
           cursor,
         })
-
-        console.log({ events })
 
         if (!events.data || events.data.length === 0) {
           break
@@ -189,7 +189,6 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
         return []
       }
 
-      // 2. Batch fetch market objects (chunk size of 50)
       const allMarketIds = Array.from(marketIds)
       const chunkSize = 50
       const chunks = []
@@ -206,15 +205,14 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
           })
         )
       )
-
-      // Flatten results
       const objects = allObjects.flat()
 
-      // 3. Parse and format market data
       const markets: Market[] = []
-
       for (const obj of objects) {
-        if (obj.data?.content && (obj.data.content as any).dataType === 'moveObject') {
+        if (
+          obj.data?.content &&
+          (obj.data.content as any).dataType === 'moveObject'
+        ) {
           const fields = (obj.data.content as any).fields
           markets.push({
             id: fields.id.id,
@@ -298,7 +296,6 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
           return null
         }
 
-        // Query for UserProfile objects owned by the address
         const objects = await suiClient.getOwnedObjects({
           owner: targetAddress,
           filter: {

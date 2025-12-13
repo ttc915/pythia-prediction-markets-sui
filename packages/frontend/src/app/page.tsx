@@ -48,9 +48,10 @@ export default function Home() {
   }, [isConfigured])
 
   // Filter markets based on tab
-  const filteredMarkets = activeTab === 'active'
-    ? markets.filter(m => !m.resolved)
-    : markets.filter(m => m.resolved)
+  const filteredMarkets =
+    activeTab === 'active'
+      ? markets.filter((m) => !m.resolved)
+      : markets.filter((m) => m.resolved)
 
   const handleOpenBetModal = (market: Market) => {
     setSelectedMarket(market)
@@ -74,7 +75,7 @@ export default function Home() {
           <Button
             size="3"
             onClick={() => setIsCreateModalOpen(true)}
-            className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white"
+            className="cursor-pointer bg-blue-600 text-white hover:bg-blue-700"
           >
             <Plus className="mr-2 h-4 w-4" /> Create Market
           </Button>
@@ -102,9 +103,19 @@ export default function Home() {
             <Text>Loading markets...</Text>
           </Flex>
         ) : filteredMarkets.length === 0 ? (
-          <Flex direction="column" align="center" justify="center" py="9" className="rounded-lg border border-dashed border-slate-300 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50">
-            <Text size="5" weight="bold" mb="2">No markets found</Text>
-            <Text color="gray" mb="4">Be the first to create a prediction market!</Text>
+          <Flex
+            direction="column"
+            align="center"
+            justify="center"
+            py="9"
+            className="rounded-lg border border-dashed border-slate-300 bg-white/50 dark:border-slate-700 dark:bg-slate-800/50"
+          >
+            <Text size="5" weight="bold" mb="2">
+              No markets found
+            </Text>
+            <Text color="gray" mb="4">
+              Be the first to create a prediction market!
+            </Text>
             <Button size="3" onClick={() => setIsCreateModalOpen(true)}>
               Create Market
             </Button>

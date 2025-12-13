@@ -18,10 +18,8 @@ const MarketCard = ({ market, onBetYes, onBetNo }: MarketCardProps) => {
   const bettingEndTime = parseInt(market.betting_end_time)
 
   const totalPool = totalYes + totalNo
-  const yesPercentage =
-    totalPool > 0 ? (totalYes / totalPool) * 100 : 50
-  const noPercentage =
-    totalPool > 0 ? (totalNo / totalPool) * 100 : 50
+  const yesPercentage = totalPool > 0 ? (totalYes / totalPool) * 100 : 50
+  const noPercentage = totalPool > 0 ? (totalNo / totalPool) * 100 : 50
 
   // Format pool in SUI (divide by 1B MIST)
   const formattedPool = (totalPool / 1_000_000_000).toFixed(2)

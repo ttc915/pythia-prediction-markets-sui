@@ -9,7 +9,9 @@ export async function POST(request: NextRequest) {
 
     // Always use the configured prover URL (defaults to prover-dev)
     // prover-dev supports both devnet and testnet (with the demo client ID)
-    const proverUrl = process.env.NEXT_PUBLIC_MYSTEN_PROVER_URL || 'https://prover-dev.mystenlabs.com/v1'
+    const proverUrl =
+      process.env.NEXT_PUBLIC_MYSTEN_PROVER_URL ||
+      'https://prover-dev.mystenlabs.com/v1'
 
     const response = await fetch(proverUrl, {
       method: 'POST',

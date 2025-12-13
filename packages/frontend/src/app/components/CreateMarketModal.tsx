@@ -57,7 +57,7 @@ const CreateMarketModal = ({ open, onOpenChange }: CreateMarketModalProps) => {
 
       const arbiterList = []
       for (const arbiter of (protocolConfig.arbiters.fields as any).contents) {
-          arbiterList.push(arbiter.fields.key)
+        arbiterList.push(arbiter.fields.key)
       }
 
       if (arbiterList.length === 0) {
@@ -223,8 +223,6 @@ const CreateMarketModal = ({ open, onOpenChange }: CreateMarketModalProps) => {
                     Final deadline for arbiter resolution
                   </Text>
                 </div>
-
-
 
                 {/* Arbiter Threshold */}
                 <div>
