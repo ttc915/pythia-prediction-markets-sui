@@ -1,202 +1,147 @@
 'use client'
 
-import { useState } from 'react'
-import { Button, Flex, Text } from '@radix-ui/themes'
+import { useState, useEffect } from 'react'
+import { Button, Flex, Text, Heading, Grid } from '@radix-ui/themes'
 import { Plus } from 'lucide-react'
 import MarketCard from './components/MarketCard'
 import CreateMarketModal from './components/CreateMarketModal'
 import PlaceBetModal from './components/PlaceBetModal'
 import NetworkSupportChecker from './components/NetworkSupportChecker'
-
-// Mock data for MVP
-const mockMarkets = [
-  {
-    id: '1',
-    description: 'Will Ethereum reach $5,000 by the end of 2025?',
-    totalYesAmount: 50_000_000_000, // 50 SUI
-    totalNoAmount: 30_000_000_000, // 30 SUI
-    bettingEndTime: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days
-    resolved: false,
-    outcome: null,
-  },
-  {
-    id: '2',
-    description: 'Will Bitcoin surpass $150,000 in 2025?',
-    totalYesAmount: 75_000_000_000, // 75 SUI
-    totalNoAmount: 45_000_000_000, // 45 SUI
-    bettingEndTime: Date.now() + 60 * 24 * 60 * 60 * 1000, // 60 days
-    resolved: false,
-    outcome: null,
-  },
-  {
-    id: '3',
-    description: 'Will it rain in San Francisco tomorrow?',
-    totalYesAmount: 10_000_000_000, // 10 SUI
-    totalNoAmount: 15_000_000_000, // 15 SUI
-    bettingEndTime: Date.now() + 1 * 24 * 60 * 60 * 1000, // 1 day
-    resolved: false,
-    outcome: null,
-  },
-  {
-    id: '4',
-    description: 'Will the US stock market close higher this week?',
-    totalYesAmount: 40_000_000_000, // 40 SUI
-    totalNoAmount: 20_000_000_000, // 20 SUI
-    bettingEndTime: Date.now() + 5 * 24 * 60 * 60 * 1000, // 5 days
-    resolved: false,
-    outcome: null,
-  },
-  {
-    id: '5',
-    description: 'Will Solana reach $300 before June 2025?',
-    totalYesAmount: 35_000_000_000, // 35 SUI
-    totalNoAmount: 45_000_000_000, // 45 SUI
-    bettingEndTime: Date.now() + 90 * 24 * 60 * 60 * 1000, // 90 days
-    resolved: false,
-    outcome: null,
-  },
-  {
-    id: '6',
-    description: 'Will AI replace software engineers by 2030?',
-    totalYesAmount: 20_000_000_000, // 20 SUI
-    totalNoAmount: 60_000_000_000, // 60 SUI
-    bettingEndTime: Date.now() + 365 * 24 * 60 * 60 * 1000, // 365 days
-    resolved: false,
-    outcome: null,
-  },
-]
+import { usePythia } from '~~/context/PythiaContext'
+import { Market } from '~~/types/pythia.types'
 
 export default function Home() {
-  const [createModalOpen, setCreateModalOpen] = useState(false)
+  const { getMarkets, isConfigured } = usePythia()
 
-  // State for bet modal
-  const [betModalOpen, setBetModalOpen] = useState(false)
-  const [selectedMarket, setSelectedMarket] = useState<any>(null)
+  const [activeTab, setActiveTab] = useState('active')
+  const [selectedMarket, setSelectedMarket] = useState<Market | null>(null)
+  const [isBetModalOpen, setIsBetModalOpen] = useState(false)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
-  const handleBetYes = (marketId: string) => {
-    const market = mockMarkets.find((m) => m.id === marketId)
-    if (market) {
-      setSelectedMarket(market)
-      setBetModalOpen(true)
+  // Real markets state
+  const [markets, setMarkets] = useState<Market[]>([])
+  const [isLoading, setIsLoading] = useState(false)
+
+  const fetchMarkets = async () => {
+    if (!isConfigured) return
+
+    setIsLoading(true)
+    try {
+      const data = await getMarkets()
+      setMarkets(data)
+    } catch (error) {
+      console.error('Failed to fetch markets:', error)
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  const handleBetNo = (marketId: string) => {
-    const market = mockMarkets.find((m) => m.id === marketId)
-    if (market) {
-      setSelectedMarket(market)
-      setBetModalOpen(true)
-    }
-  }
+  // Fetch markets on mount and when configured
+  useEffect(() => {
+    fetchMarkets()
+  }, [isConfigured])
 
-  const convertMockToRealMarket = (mock: any) => {
-    if (!mock) return null
-    return {
-      id: mock.id,
-      description: mock.description,
-      total_yes_amount: mock.totalYesAmount.toString(),
-      total_no_amount: mock.totalNoAmount.toString(),
-      betting_end_time: mock.bettingEndTime.toString(),
-      resolved: mock.resolved,
-      outcome: mock.outcome,
-      // Default values for fields missing in mock
-      version: '1',
-      resolution_deadline: (Date.now() + 1000000).toString(),
-      creator: '0x0',
-      creator_fee_bps: '100',
-      arbiters: [],
-      arbiter_threshold: '1',
-      dispute_end_time: '0',
-      disputed: false,
-      finalized: false
-    }
+  // Refresh markets periodically (every 30s)
+  useEffect(() => {
+    const interval = setInterval(fetchMarkets, 30000)
+    return () => clearInterval(interval)
+  }, [isConfigured])
+
+  // Filter markets based on tab
+  const filteredMarkets = activeTab === 'active'
+    ? markets.filter(m => !m.resolved)
+    : markets.filter(m => m.resolved)
+
+  const handleOpenBetModal = (market: Market) => {
+    setSelectedMarket(market)
+    setIsBetModalOpen(true)
   }
 
   return (
-    <>
+    <main className="min-h-screen bg-slate-50 dark:bg-slate-900">
       <NetworkSupportChecker />
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <Flex justify="between" align="center" className="mb-8">
+          <div>
+            <Heading size="8" className="mb-2 text-slate-900 dark:text-white">
+              Prediction Markets
+            </Heading>
+            <Text className="text-slate-600 dark:text-slate-400">
+              Bet on future events and earn rewards
+            </Text>
+          </div>
+          <Button
+            size="3"
+            onClick={() => setIsCreateModalOpen(true)}
+            className="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white"
+          >
+            <Plus className="mr-2 h-4 w-4" /> Create Market
+          </Button>
+        </Flex>
 
-      <main className="container mx-auto px-4 py-8">
-        {/* Page Header */}
-        <Flex direction="column" gap="6" className="mb-8">
-          <Flex justify="between" align="center" wrap="wrap" gap="4">
-            <div>
-              <Text
-                size="8"
-                weight="bold"
-                className="text-slate-900 dark:text-white"
-              >
-                Prediction Markets
-              </Text>
-              <Text
-                size="3"
-                className="mt-1 text-slate-600 dark:text-slate-400"
-              >
-                Bet on the future with Pythia
-              </Text>
-            </div>
-
-            <Button
-              size="3"
-              className="bg-blue-500 text-white hover:bg-blue-600"
-              onClick={() => setCreateModalOpen(true)}
-            >
-              <Plus className="h-5 w-5" />
-              Create Market
-            </Button>
-          </Flex>
+        {/* Filters */}
+        <Flex gap="4" className="mb-8">
+          <Button
+            variant={activeTab === 'active' ? 'solid' : 'soft'}
+            onClick={() => setActiveTab('active')}
+          >
+            Active Markets
+          </Button>
+          <Button
+            variant={activeTab === 'resolved' ? 'solid' : 'soft'}
+            onClick={() => setActiveTab('resolved')}
+          >
+            Resolved
+          </Button>
         </Flex>
 
         {/* Markets Grid */}
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {mockMarkets.map((market) => (
-            <MarketCard
-              key={market.id}
-              market={market}
-              onBetYes={handleBetYes}
-              onBetNo={handleBetNo}
-            />
-          ))}
-        </div>
-
-        {/* Empty State (if no markets) */}
-        {mockMarkets.length === 0 && (
-          <Flex
-            direction="column"
-            align="center"
-            justify="center"
-            gap="4"
-            className="py-20"
-          >
-            <Text size="5" className="text-slate-600 dark:text-slate-400">
-              No markets available yet
-            </Text>
-            <Button
-              size="3"
-              className="bg-blue-500 hover:bg-blue-600"
-              onClick={() => setCreateModalOpen(true)}
-            >
-              <Plus className="h-5 w-5" />
-              Create the first market
+        {isLoading && markets.length === 0 ? (
+          <Flex justify="center" py="9">
+            <Text>Loading markets...</Text>
+          </Flex>
+        ) : filteredMarkets.length === 0 ? (
+          <Flex direction="column" align="center" justify="center" py="9" className="rounded-lg border border-dashed border-slate-300 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50">
+            <Text size="5" weight="bold" mb="2">No markets found</Text>
+            <Text color="gray" mb="4">Be the first to create a prediction market!</Text>
+            <Button size="3" onClick={() => setIsCreateModalOpen(true)}>
+              Create Market
             </Button>
           </Flex>
+        ) : (
+          <Grid
+            columns={{ initial: '1', sm: '2', lg: '3' }}
+            gap="6"
+            className="mb-8"
+          >
+            {filteredMarkets.map((market) => (
+              <MarketCard
+                key={market.id}
+                market={market}
+                onBetYes={() => handleOpenBetModal(market)}
+                onBetNo={() => handleOpenBetModal(market)}
+              />
+            ))}
+          </Grid>
         )}
-      </main>
+      </div>
 
-      {/* Create Market Modal */}
-      <CreateMarketModal
-        open={createModalOpen}
-        onOpenChange={setCreateModalOpen}
-      />
-
-      {/* Place Bet Modal */}
       {selectedMarket && (
         <PlaceBetModal
-          open={betModalOpen}
-          onOpenChange={setBetModalOpen}
-          market={convertMockToRealMarket(selectedMarket)!}
+          open={isBetModalOpen}
+          onOpenChange={setIsBetModalOpen}
+          market={selectedMarket}
         />
       )}
-    </>
+
+      <CreateMarketModal
+        open={isCreateModalOpen}
+        onOpenChange={(open) => {
+          setIsCreateModalOpen(open)
+          if (!open) fetchMarkets() // Refresh list after closing create modal
+        }}
+      />
+    </main>
   )
 }

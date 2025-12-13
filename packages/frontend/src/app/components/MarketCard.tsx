@@ -2,41 +2,40 @@
 
 import { useState } from 'react'
 import { Card, Flex, Text, Button, Badge } from '@radix-ui/themes'
-import { TrendingUp, TrendingDown, Clock } from 'lucide-react'
+import { TrendingUp, TrendingDown, Clock, Trophy } from 'lucide-react'
+import { Market } from '~~/types/pythia.types'
 
 export interface MarketCardProps {
-  market: {
-    id: string
-    description: string
-    totalYesAmount: number
-    totalNoAmount: number
-    bettingEndTime: number
-    resolved?: boolean
-    outcome?: boolean | null
-  }
-  onBetYes?: (marketId: string) => void
-  onBetNo?: (marketId: string) => void
+  market: Market
+  onBetYes?: (market: Market) => void
+  onBetNo?: (market: Market) => void
 }
 
 const MarketCard = ({ market, onBetYes, onBetNo }: MarketCardProps) => {
-  const totalPool = market.totalYesAmount + market.totalNoAmount
+  // Parse values from string to number
+  const totalYes = parseInt(market.total_yes_amount)
+  const totalNo = parseInt(market.total_no_amount)
+  const bettingEndTime = parseInt(market.betting_end_time)
+
+  const totalPool = totalYes + totalNo
   const yesPercentage =
-    totalPool > 0 ? (market.totalYesAmount / totalPool) * 100 : 50
+    totalPool > 0 ? (totalYes / totalPool) * 100 : 50
   const noPercentage =
-    totalPool > 0 ? (market.totalNoAmount / totalPool) * 100 : 50
+    totalPool > 0 ? (totalNo / totalPool) * 100 : 50
 
   // Format pool in SUI (divide by 1B MIST)
   const formattedPool = (totalPool / 1_000_000_000).toFixed(2)
 
   // Calculate time remaining - using useState to avoid impure function during render
   const [currentTime] = useState(() => Date.now())
-  const timeRemaining = market.bettingEndTime - currentTime
+  const timeRemaining = bettingEndTime - currentTime
   const daysRemaining = Math.floor(timeRemaining / (1000 * 60 * 60 * 24))
   const hoursRemaining = Math.floor(
     (timeRemaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
   )
 
   const getTimeRemainingText = () => {
+    if (market.resolved) return 'Resolved'
     if (timeRemaining <= 0) return 'Betting closed'
     if (daysRemaining > 0) return `${daysRemaining}d ${hoursRemaining}h left`
     if (hoursRemaining > 0) return `${hoursRemaining}h left`
@@ -45,13 +44,13 @@ const MarketCard = ({ market, onBetYes, onBetNo }: MarketCardProps) => {
 
   const handleBetYes = () => {
     if (onBetYes && !market.resolved && timeRemaining > 0) {
-      onBetYes(market.id)
+      onBetYes(market)
     }
   }
 
   const handleBetNo = () => {
     if (onBetNo && !market.resolved && timeRemaining > 0) {
-      onBetNo(market.id)
+      onBetNo(market)
     }
   }
 

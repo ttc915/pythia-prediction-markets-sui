@@ -154,34 +154,63 @@ export function PythiaProvider({ children }: { children: ReactNode }) {
     try {
       ensureConfigured()
 
-      // 1. Query events to find all created markets
-      const events = await suiClient.queryEvents({
-        query: {
-          MoveEventType: `${contractPackageId}::${MODULE_NAME}::MarketCreatedEvent`,
-        },
-        order: 'Descending',
-      })
+      // 1. Query events to find all created markets (with pagination)
+      const marketIds = new Set<string>()
+      let hasNextPage = true
+      let cursor: any = null
 
-      if (!events.data || events.data.length === 0) {
+      while (hasNextPage) {
+        const events = await suiClient.queryEvents({
+          query: {
+            MoveEventType: `${contractPackageId}::${MODULE_NAME}::MarketCreatedEvent`,
+          },
+          order: 'descending',
+          cursor,
+        })
+
+        console.log({ events })
+
+        if (!events.data || events.data.length === 0) {
+          break
+        }
+
+        events.data.forEach((event) => {
+          const id = (event.parsedJson as any)?.market_id
+          if (id) {
+            marketIds.add(id)
+          }
+        })
+
+        hasNextPage = events.hasNextPage
+        cursor = events.nextCursor
+      }
+
+      if (marketIds.size === 0) {
         return []
       }
 
-      // 2. Extract market IDs from events
-      const marketIds = events.data
-        .map((event) => (event.parsedJson as any)?.market_id)
-        .filter((id) => !!id)
+      // 2. Batch fetch market objects (chunk size of 50)
+      const allMarketIds = Array.from(marketIds)
+      const chunkSize = 50
+      const chunks = []
 
-      if (marketIds.length === 0) {
-        return []
+      for (let i = 0; i < allMarketIds.length; i += chunkSize) {
+        chunks.push(allMarketIds.slice(i, i + chunkSize))
       }
 
-      // 3. Batch fetch market objects
-      const objects = await suiClient.multiGetObjects({
-        ids: marketIds,
-        options: { showContent: true },
-      })
+      const allObjects = await Promise.all(
+        chunks.map((chunk) =>
+          suiClient.multiGetObjects({
+            ids: chunk,
+            options: { showContent: true },
+          })
+        )
+      )
 
-      // 4. Parse and format market data
+      // Flatten results
+      const objects = allObjects.flat()
+
+      // 3. Parse and format market data
       const markets: Market[] = []
 
       for (const obj of objects) {
