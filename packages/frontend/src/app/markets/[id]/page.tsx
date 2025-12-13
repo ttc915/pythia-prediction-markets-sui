@@ -91,7 +91,6 @@ export default function MarketDetailsPage({
     )
   }
 
-  // --- Helpers similar to MarketCard ---
   const totalYes = parseInt(market.total_yes_amount)
   const totalNo = parseInt(market.total_no_amount)
   const bettingEndTime = parseInt(market.betting_end_time)
@@ -120,14 +119,6 @@ export default function MarketDetailsPage({
     account?.address && market.arbiters.includes(account.address)
 
   const handleBetClick = () => {
-    // This assumes PlaceBetModal can handle pre-selection if modified, or we just open it for the market
-    // Wait, PlaceBetModal takes 'market'. It doesn't seem to take 'side' as prop based on previous view.
-    // Let's check PlaceBetModal props later.  The user said "Reuse PlaceBetModal".
-    // I'll just open the modal. The user can choose side inside, or I might need to update PlaceBetModal if needed.
-    // Actually, looking at MarketCard usage:
-    // onBetYes={() => handleOpenBetModal(market)}
-    // It seems PlaceBetModal might handle side selection inside or just be general.
-    // Let's stick to opening it.
     setIsBetModalOpen(true)
   }
 
@@ -274,70 +265,7 @@ export default function MarketDetailsPage({
 
                 {/* 3. Arbiter Actions */}
                 {market.resolved === false &&
-                timeRemaining <= 0 && // Usually arbitrage happens after betting closes, but 'resolved' flag logic might vary. Based on MarketCard logic: resolved && activeTab === 'waiting_arbitrage'
-                // Wait, check MarketCard: "market.resolved && activeTab === 'waiting_arbitrage'"
-                // But 'resolved' usually means the outcome is set. 'waiting_arbitrage' usually implies the market is ready for resolution but not finalized?
-                // Let's re-read MarketCard logic carefully.
-                // filteredMarkets logic in page.tsx:
-                // waiting_arbitrage: !resolved (implied? No, filter(m => m.resolved) is for 'resolved' tab.)
-                // waiting_arbitrage: markets.filter(m => account?.address ? m.arbiters.includes(account.address) : true)
-                // Wait, look at page.tsx line 51: activeTab === 'active' ? markets.filter((m) => !m.resolved)
-                // line 56: : markets.filter((m) => m.resolved)  (Wait, this is for 'resolved' tab?)
-                // line 53: waiting_arbitrage logic seems to filter by arbiter inclusion. But what about resolved status?
-                // Usually arbiters resolve the market. So it should NOT be resolved yet.
-                // But look at line 192 in MarketCard.tsx:  market.resolved && activeTab === 'waiting_arbitrage'.
-                // This is weird. If it's already resolved, why arbiter buttons?
-                // Maybe 'resolved' field means something else?
-                // Let's look at PythiaContext types and submitResolution.
-                // submitResolution sets the outcome.
-                // In PythiaContext: fields.resolved comes from the contract.
-                // Let's trust my previous reading of MarketCard logic:
-                // handleArbitrageYes checks: onArbitrageYes && market.resolved && activeTab === 'waiting_arbitrage'.
-                // This implies that for the "Arbitrage" tab, we are showing markets where `market.resolved` is TRUE? That sounds backwards for "deciding the outcome".
-                // Maybe `resolved` means "Betting period resolved/ended" and `outcome` is yet to be decided?
-                // Or maybe I misread MarketCard line 192.
-                // "market.resolved && activeTab === 'waiting_arbitrage'"
-                // Let's re-read line 51 of page.tsx:
-                // activeTab === 'active' ? markets.filter((m) => !m.resolved)
-                // If activeTab is 'waiting_arbitrage', it filters by arbiter inclusion. It doesn't check resolved.
-                // BUT MarketCard only shows Arbiter buttons if `market.resolved` is true.
-                // This strongly suggests that in this system, `market.resolved` might mean "Ready for resolution" (aka betting ended)?
-                // OR there is a bug in the current code I just read.
-                // However, let's look at `getTimeRemainingText` in MarketCard: `if (market.resolved) return 'Resolved'`.
-                // If it returns "Resolved", it implies it's done.
-                // If MarketCard shows Arbiter buttons only when `market.resolved` is true, it implies you can arbitrate AFTER it is resolved? That makes no sense unless it's for disputing?
-                // ...
-                // Wait, `submitResolution` sets the outcome.
-                // Let's stick to safe logic: You can arbitrate if you are an arbiter AND market is NOT finalized?
-                // In `MarketCard.tsx`:
-                /*
-                                      192:           {market.resolved && activeTab === 'waiting_arbitrage' && (
-                                    */
-                // Wait, if I am on the details page, I don't have tabs.
-                // I should show Arbiter buttons if the user is an arbiter AND the market allows resolution.
-                // When does a market allow resolution? Usually after betting end time.
-                // And before it is finalized?
-                // Let's look at `createMarket` constraints in Context: resolutionDeadline > bettingEndTime.
-                // So between bettingEndTime and resolutionDeadline is the resolution period.
-                // The `market.resolved` flag likely comes from the move struct.
-                // If `market.resolved` is true, it usually means outcome is set.
-                // Maybe the buttons in MarketCard are WRONG or I am misinterpreting `activeTab === 'waiting_arbitrage'`.
-                // Actually, let's try to be smart. If timeRemaining <= 0 and !market.resolved, that's usually when you resolve.
-                // Use `isArbiter` check.
-                // AND check `!market.resolved` (outcome not set yet). Or maybe `!market.finalized`.
-                // Given the ambiguity, I'll provide an "Arbitrator Actions" section that appears if `isArbiter` is true.
-                // And disabling them if resolved.
-                // BUT, I'll follow the pattern "otherwise they will be disabled with an explanation text on hover" as per USER REQUEST.
-                // USER REQUEST: "In here we will have the place bet buttons OR the arbitrage yes/no in case you are the arbiter (and the time is due, otherwise they will be disabled with an explanation text on hover)."
-                // "time is due" -> bettingEndTime passed.
-                // So:
-                // IF isArbiter:
-                //    Show ARBITRAGE buttons.
-                //    Enable IF (timeRemaining <= 0 && !market.resolved).
-                //    Disable IF (timeRemaining > 0) -> "Betting is still active".
-                //    Disable IF (market.resolved) -> "Market already resolved".
-                // ELSE:
-                //    Show BET buttons.
+                timeRemaining <= 0 &&
                 isArbiter ? (
                   <div className="rounded-xl border border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-900/20">
                     <Heading
@@ -416,7 +344,7 @@ export default function MarketDetailsPage({
             className="rounded-lg bg-white p-6"
           >
             <QRCode
-              value={typeof window !== 'undefined' ? window.location.href : ''}
+              value={typeof window !== 'undefined' ? `${window.location.href}?referrer=${account?.address}` : ''}
               size={256}
               style={{ height: 'auto', maxWidth: '100%', width: '100%' }}
               viewBox={`0 0 256 256`}
