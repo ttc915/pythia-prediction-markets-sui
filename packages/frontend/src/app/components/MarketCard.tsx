@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Card, Flex, Text, Button, Badge } from '@radix-ui/themes'
 import { TrendingUp, TrendingDown, Clock } from 'lucide-react'
 import { Market } from '~~/types/pythia.types'
@@ -22,6 +23,7 @@ const MarketCard = ({
   onBetYes,
   onBetNo,
 }: MarketCardProps) => {
+  const router = useRouter()
   const totalYes = parseInt(market.total_yes_amount)
   const totalNo = parseInt(market.total_no_amount)
   const bettingEndTime = parseInt(market.betting_end_time)
@@ -48,19 +50,26 @@ const MarketCard = ({
     return 'Ending soon'
   }
 
-  const handleBetYes = () => {
+  const handleCardClick = () => {
+    router.push(`/markets/${market.id}`)
+  }
+
+  const handleBetYes = (e: React.MouseEvent) => {
+    e.stopPropagation()
     if (onBetYes && !market.resolved && timeRemaining > 0) {
       onBetYes(market)
     }
   }
 
-  const handleBetNo = () => {
+  const handleBetNo = (e: React.MouseEvent) => {
+    e.stopPropagation()
     if (onBetNo && !market.resolved && timeRemaining > 0) {
       onBetNo(market)
     }
   }
 
-  function handleArbitrageYes() {
+  function handleArbitrageYes(e: React.MouseEvent) {
+    e.stopPropagation()
     if (
       onArbitrageYes &&
       market.resolved &&
@@ -69,14 +78,18 @@ const MarketCard = ({
       onArbitrageYes(market)
     }
   }
-  function handleArbitrageNo() {
+  function handleArbitrageNo(e: React.MouseEvent) {
+    e.stopPropagation()
     if (onArbitrageNo && market.resolved && activeTab === 'waiting_arbitrage') {
       onArbitrageNo(market)
     }
   }
 
   return (
-    <Card className="dark:hover:border-400 group relative flex h-full overflow-hidden rounded-xl border-2 border-slate-200 bg-white p-0 transition-all hover:border-blue-500 hover:shadow-xl dark:border-slate-700 dark:bg-slate-800">
+    <Card
+      onClick={handleCardClick}
+      className="dark:hover:border-400 group relative flex h-full cursor-pointer overflow-hidden rounded-xl border-2 border-slate-200 bg-white p-0 transition-all hover:border-blue-500 hover:shadow-xl dark:border-slate-700 dark:bg-slate-800"
+    >
       <Flex direction="column" gap="4" className="flex-1 p-5">
         {/* Upper content that can grow */}
         <Flex direction="column" gap="4" className="flex-1">
