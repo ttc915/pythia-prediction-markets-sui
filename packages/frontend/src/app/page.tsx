@@ -11,15 +11,24 @@ import AdminDashboard from './components/AdminDashboard'
 import { usePythia } from '~~/context/PythiaContext'
 import { Market } from '~~/types/pythia.types'
 import { useUnifiedWallet } from './context/UnifiedWalletContext'
+import { useAutoCreateProfile } from '~~/hooks/useAutoCreateProfile'
+import { ProfileCreationDialog } from './components/ProfileCreationDialog'
 
 export default function Home() {
   const { getMarkets, submitResolution, isConfigured } = usePythia()
   const { account } = useUnifiedWallet()
+  const {
+    needsProfile,
+    createProfile,
+    isCreating: isCreatingProfile,
+    error: profileError,
+  } = useAutoCreateProfile()
 
   const [activeTab, setActiveTab] = useState('active')
   const [selectedMarket, setSelectedMarket] = useState<Market | null>(null)
   const [isBetModalOpen, setIsBetModalOpen] = useState(false)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
 
   const [markets, setMarkets] = useState<Market[]>([])
   const [isLoading, setIsLoading] = useState(false)
@@ -47,6 +56,13 @@ export default function Home() {
     return () => clearInterval(interval)
   }, [isConfigured, fetchMarkets])
 
+  useEffect(() => {
+    if (!needsProfile && isProfileModalOpen) {
+      setIsProfileModalOpen(false)
+      setIsCreateModalOpen(true)
+    }
+  }, [needsProfile, isProfileModalOpen])
+
   const filteredMarkets =
     activeTab === 'active'
       ? markets.filter((m) => !m.resolved)
@@ -59,6 +75,14 @@ export default function Home() {
   const handleOpenBetModal = (market: Market) => {
     setSelectedMarket(market)
     setIsBetModalOpen(true)
+  }
+
+  function handleCreateMarketClick() {
+    if (needsProfile) {
+      setIsProfileModalOpen(true)
+    } else {
+      setIsCreateModalOpen(true)
+    }
   }
 
   function handleArbitrageYes(market: Market) {
@@ -94,12 +118,20 @@ export default function Home() {
             </div>
             <Button
               size="3"
-              onClick={() => setIsCreateModalOpen(true)}
+              onClick={handleCreateMarketClick}
               className="cursor-pointer bg-blue-600 text-white hover:bg-blue-700"
             >
               <Plus className="mr-2 h-4 w-4" /> Create Market
             </Button>
           </Flex>
+
+          <ProfileCreationDialog
+            open={isProfileModalOpen}
+            onDismiss={() => setIsProfileModalOpen(false)}
+            onCreate={createProfile}
+            isCreating={isCreatingProfile}
+            error={profileError}
+          />
 
           {/* Filters */}
           <Flex gap="4" className="mb-8">
@@ -144,7 +176,7 @@ export default function Home() {
               <Text color="gray" mb="4">
                 Be the first to create a prediction market!
               </Text>
-              <Button size="3" onClick={() => setIsCreateModalOpen(true)}>
+              <Button size="3" onClick={handleCreateMarketClick}>
                 Create Market
               </Button>
             </Flex>
