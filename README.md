@@ -202,7 +202,7 @@ Located in `packages/frontend/`, providing:
 
 ## User Flows
 
-### Bettor Workflow
+### Bettor Workflow 
 
 ```mermaid
 graph TD
