@@ -68,7 +68,7 @@ export default function Home() {
       ? markets.filter((m) => !m.resolved)
       : activeTab === 'waiting_arbitrage'
         ? markets.filter((m) =>
-            account?.address ? m.arbiters.includes(account.address) : true
+            account?.address ? m.arbiters.includes(account.address) && m.resolved === false: m.resolved === false
           )
         : markets.filter((m) => m.resolved)
 
