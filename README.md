@@ -1,30 +1,13 @@
-# Sui dApp Starter - Easy-to-Use Full-Stack Sui Starter
-[![Build and Lint (frontend)](https://github.com/suiware/sui-dapp-starter/actions/workflows/build_and_lint.yaml/badge.svg)](https://github.com/suiware/sui-dapp-starter/actions/workflows/build_and_lint.yaml)
-[![Discord chat](https://img.shields.io/discord/1237259509366521866.svg?logo=discord&style=flat-square)](https://discord.com/invite/HuDPpXz4Hx)
+# Pythia - Decentralized Prediction Markets on Sui
 
-![Spoiler](https://repository-images.githubusercontent.com/794883099/f0937c6b-c021-41db-b44a-a287b29111c3)
-
-[Won the 1st place in the Randomness category of the Sui Overflow 2024 hackathon](https://blog.sui.io/2024-sui-overflow-hackathon-winners/)
-
-## Motivation
-
-Most of the Sui starters I found were either very basic or one-sided (frontend or backend). Thanks to my experience with various full-stack starters and templates, I knew how to do better, so I started this template with the goal of providing all basic tools and components for you to focus on your business logic from day one and not spend weeks on creating your app skeleton. // [@kkomelin](https://github.com/kkomelin)
+Pythia is a decentralized prediction market platform built on the Sui blockchain. It empowers users to create, participate in, and resolve markets on real-world events, leveraging the high scalability and low latency of the Sui network.
 
 ## Features
 
-- **[Suibase](https://suibase.io/)**: Painless work with the networks and system dependencies
-- **[Local Sui Explorer](https://github.com/suiware/sui-explorer)**: Browse your transactions and objects locally
-- **pnpm**: More efficient package management for monorepos
-- **TypeScript**: Less error-prone JavaScript
-- **React or Next.js**: Choose a template with a framework of your choice
-- **Tailwind CSS**: Utility-first CSS for more efficient styling
-- **Vite + SWC**: Faster app bundling and optimizing
-- **Radix UI**: Accessible React components to prototype quicker 
-- **Sui dApp Kit**: All you need to work with Sui network on frontend
-- **[@suiware/kit](https://www.npmjs.com/package/@suiware/kit)**: Useful react primitives, such as useTransact, useNetworkType, NetworkType, useBalance, Balance, useFaucet, Faucet and more
-- **Frontend Deployment**: [Firebase](https://sui-dapp-starter.dev/docs/frontend/deployment/firebase), [Walrus Sites](https://sui-dapp-starter.dev/docs/frontend/deployment/walrus), [Arweave](https://sui-dapp-starter.dev/docs/frontend/deployment/arweave)
-- **One-liner Install**: Just `pnpm create sui-dapp@latest`
-- **[Demo app](https://demo.sui-dapp-starter.dev/)**: Default Greeting (React) template
+- **Prediction Markets**: Seamlessly create and trade on markets for any future event.
+- **Unified Wallet Access**: Log in effortlessly using Google accounts (zkLogin) or connect standard Sui wallets.
+- **Decentralized & Secure**: Fully on-chain logic ensures transparency and security for all market data and funds.
+- **Community Driven**: Built for the community, with tools for decentralized moderation and dispute resolution.
 
 ## Prerequisites
 
